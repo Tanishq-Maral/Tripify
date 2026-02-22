@@ -1,0 +1,61 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Node modules (frontend & backend)
+frontend/node_modules/
+backend/node_modules/
+
+# Build / Dist
+frontend/dist/
+backend/dist/
+
+# Environment files
+*.local
+frontend/.env
+backend/.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Coverage / Testing
+coverage/
+*.lcov
+
+# Editor / IDE / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Misc cache
+*.cache
+
+# Docker
+# Ignore Docker-related files
+*.pid
+*.seed
+*.pid.lock
+
+# Docker volumes / data
+docker-data/
+volumes/
+data/
+tmp/
+
+# Docker build artifacts
+*.tar
+*.bak
+*.tmp
