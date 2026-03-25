@@ -4,6 +4,7 @@ import API from "../api/api";
 import TripCard, { Trip } from "../components/TripCard";
 import TripFilters, { Filters } from "../components/TripFilters";
 import { Link, useNavigate } from "react-router-dom";
+import backgroundImage from "../assets/background.jpg";
 
 export default function Home() {
   const { user, logout } = useAuth();
@@ -135,7 +136,7 @@ export default function Home() {
 
         <section
           className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.7),rgba(0,0,0,0.7)), url('/src/assets/background.jpg')` }}
+          style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.7),rgba(0,0,0,0.7)), url(${backgroundImage})` }}
         >
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
