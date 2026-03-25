@@ -86,7 +86,7 @@
   background: #94a3b8;
 }
 
-/* Hide header on landing page */
-body:has(.bg-gray-900) header {
+/* Optional legacy toggle: only hide headers explicitly marked as legacy */
+body:has(.bg-gray-900) .legacy-header {
   display: none !important;
 }

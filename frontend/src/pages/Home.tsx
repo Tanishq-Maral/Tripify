@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 export default function Home() {
   const { user, logout } = useAuth();
   const nav = useNavigate();
+  const [showLandingHeader, setShowLandingHeader] = useState<boolean>(false);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [filters, setFilters] = useState<Filters>({
@@ -44,6 +45,24 @@ export default function Home() {
     }
   }, [user, hasInitialLoad]);
 
+  useEffect(() => {
+    if (user) {
+      setShowLandingHeader(false);
+      return;
+    }
+
+    const onScroll = () => {
+      setShowLandingHeader(window.scrollY > 90);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [user]);
+
   const handleFiltersChange = (newFilters: Filters) => {
     setFilters(newFilters);
     loadTrips(newFilters, searchTerm);
@@ -77,6 +96,43 @@ export default function Home() {
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-900">
+        <header
+          className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+            showLandingHeader
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 -translate-y-4 pointer-events-none"
+          }`}
+        >
+          <div className="border-b border-white/20 bg-slate-900/35 backdrop-blur-lg shadow-lg shadow-black/25">
+          {/* <div className="mx-3 mt-3 rounded-2xl border border-white/20 bg-slate-900/35 backdrop-blur-xl shadow-2xl shadow-black/30"> */}
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+              <Link to="/" className="flex items-center gap-3 text-white">
+                <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <span className="text-lg font-bold tracking-wide">Tripify</span>
+              </Link>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Link
+                  to="/auth?mode=login"
+                  className="px-4 py-2 rounded-xl text-sm font-semibold text-white/95 border border-white/25 hover:bg-white/10 transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/auth?mode=signup"
+                  className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 transition-colors shadow-lg shadow-blue-600/30"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            </div>
+          </div>
+        </header>
+
         <section
           className="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.7),rgba(0,0,0,0.7)), url('/src/assets/background.jpg')` }}
@@ -90,7 +146,7 @@ export default function Home() {
               Discover new destinations, share experiences, and create unforgettable memories.
             </p>
             <Link
-              to="/auth"
+              to="/auth?mode=login"
               className="inline-flex items-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-lg"
             >
               Get Started
@@ -134,7 +190,7 @@ export default function Home() {
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ready to Start Your Adventure?</h2>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">Join thousands of travelers sharing their journeys</p>
             <Link
-              to="/auth"
+              to="/auth?mode=signup"
               className="inline-flex items-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-lg"
             >
               Create Your Account

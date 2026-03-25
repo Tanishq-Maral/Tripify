@@ -9,35 +9,54 @@ export interface AuthUser {
 
 interface AuthContextType {
   user: AuthUser | null;
+  isAuthReady: boolean;
   login: (userData: AuthUser, token: string, rememberMe?: boolean) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const getStoredAuth = (): { user: AuthUser | null; isPersistent: boolean } => {
+  const localUser = localStorage.getItem("user");
+  const localToken = localStorage.getItem("token");
+
+  if (localUser && localToken) {
+    return {
+      user: JSON.parse(localUser) as AuthUser,
+      isPersistent: true,
+    };
+  }
+
+  const sessionUser = sessionStorage.getItem("user");
+  const sessionToken = sessionStorage.getItem("token");
+
+  if (sessionUser && sessionToken) {
+    return {
+      user: JSON.parse(sessionUser) as AuthUser,
+      isPersistent: false,
+    };
+  }
+
+  return {
+    user: null,
+    isPersistent: false,
+  };
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(() => getStoredAuth().user);
+  const [isAuthReady, setIsAuthReady] = useState<boolean>(false);
 
   useEffect(() => {
-    const rememberMe = localStorage.getItem("rememberMe") === "true";
-    const storage = rememberMe ? localStorage : sessionStorage;
+    const storedAuth = getStoredAuth();
 
-    const storedUser = storage.getItem("user");
-    const storedToken = storage.getItem("token");
-
-    console.log("🔐 AuthContext - Loading user on app start:", {
-      rememberMe,
-      storage: rememberMe ? "localStorage" : "sessionStorage",
-      hasUser: !!storedUser,
-      hasToken: !!storedToken,
+    console.log("🔐 AuthContext - Hydrating auth state:", {
+      isPersistent: storedAuth.isPersistent,
+      hasUser: !!storedAuth.user,
     });
 
-    if (storedUser && storedToken) {
-      console.log("✅ AuthContext - User found, setting user state");
-      setUser(JSON.parse(storedUser) as AuthUser);
-    } else {
-      console.log("❌ AuthContext - No user found in storage");
-    }
+    setUser(storedAuth.user);
+    setIsAuthReady(true);
   }, []);
 
   const login = (userData: AuthUser, token: string, rememberMe = false): void => {
@@ -60,11 +79,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const storage = rememberMe ? localStorage : sessionStorage;
 
+    localStorage.setItem("rememberMe", String(rememberMe));
     storage.setItem("user", JSON.stringify(userData));
     storage.setItem("token", token);
 
     console.log("💾 User data stored in:", rememberMe ? "localStorage" : "sessionStorage");
     setUser(userData);
+    setIsAuthReady(true);
   };
 
   const logout = (): void => {
@@ -73,14 +94,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("rememberMe");
     localStorage.removeItem("rememberedEmail");
-    localStorage.removeItem("rememberedPassword");
     sessionStorage.removeItem("user");
     sessionStorage.removeItem("token");
     setUser(null);
+    setIsAuthReady(true);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthReady, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
