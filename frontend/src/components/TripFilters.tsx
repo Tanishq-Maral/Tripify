@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import API from "../api/api";
 
 export interface Filters {
@@ -60,14 +60,6 @@ export default function TripFilters({ onFiltersChange }: TripFiltersProps) {
     { value: "100001", label: "Above \u20b91,00,000" },
   ];
 
-  const debounce = <T extends unknown[]>(func: (...args: T) => void, delay: number) => {
-    let timeoutId: ReturnType<typeof setTimeout>;
-    return (...args: T) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => func(...args), delay);
-    };
-  };
-
   useEffect(() => {
     const loadFilterOptions = async () => {
       try {
@@ -80,17 +72,13 @@ export default function TripFilters({ onFiltersChange }: TripFiltersProps) {
     loadFilterOptions();
   }, []);
 
-  const debouncedFilterChange = useCallback(
-    debounce((newFilters: Filters) => {
-      onFiltersChange(newFilters);
-    }, 500),
-    [onFiltersChange]
-  );
-
   const handleFilterChange = (key: keyof Filters, value: string) => {
     const newFilters: Filters = { ...filters, [key]: value };
     setFilters(newFilters);
-    debouncedFilterChange(newFilters);
+  };
+
+  const applyFilters = () => {
+    onFiltersChange(filters);
   };
 
   const clearFilters = () => {
@@ -108,37 +96,28 @@ export default function TripFilters({ onFiltersChange }: TripFiltersProps) {
   };
 
   return (
-    <div className="bg-gray-700/50 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-600/30 p-6">
+    <div className="rounded-2xl border border-white/80 bg-white p-6 shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-[#072466] rounded-xl flex items-center justify-center">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
             </svg>
           </div>
           <div>
-            <h3 className="text-xl font-bold text-white">Filter Trips</h3>
-            <p className="text-sm text-gray-300">Refine your search</p>
+            <h3 className="text-xl font-bold text-slate-900">Filter Trips</h3>
+            <p className="text-sm text-slate-500">Refine your search</p>
           </div>
         </div>
-        <button
-          onClick={clearFilters}
-          className="flex items-center gap-2 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-600/50 rounded-xl transition-all duration-200 font-medium"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-          Clear All
-        </button>
       </div>
 
       {/* Filters Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Destination */}
         <div className="space-y-2">
-          <label className="flex text-sm font-semibold text-gray-300 items-center gap-2">
-            <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <label className="flex text-sm font-semibold text-slate-600 items-center gap-2">
+            <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             </svg>
             Destination
@@ -146,19 +125,19 @@ export default function TripFilters({ onFiltersChange }: TripFiltersProps) {
           <select
             value={filters.destination}
             onChange={(e) => handleFilterChange("destination", e.target.value)}
-            className="w-full p-3 border border-gray-500/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-600/30 text-white transition-all duration-200 hover:bg-gray-600/50"
+            className="w-full p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-slate-800 transition-all duration-200"
           >
-            <option value="" className="text-white bg-gray-600">All Destinations</option>
+            <option value="">All Destinations</option>
             {filterOptions.destinations.map((dest) => (
-              <option key={dest} value={dest} className="text-white bg-gray-700">{dest}</option>
+              <option key={dest} value={dest}>{dest}</option>
             ))}
           </select>
         </div>
 
         {/* Pickup Location */}
         <div className="space-y-2">
-          <label className="flex text-sm font-semibold text-gray-300 items-center gap-2">
-            <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <label className="flex text-sm font-semibold text-slate-600 items-center gap-2">
+            <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             </svg>
             Pickup Location
@@ -166,19 +145,19 @@ export default function TripFilters({ onFiltersChange }: TripFiltersProps) {
           <select
             value={filters.pickupLocation}
             onChange={(e) => handleFilterChange("pickupLocation", e.target.value)}
-            className="w-full p-3 border border-gray-500/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-600/30 text-white transition-all duration-200 hover:bg-gray-600/50"
+            className="w-full p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-slate-800 transition-all duration-200"
           >
-            <option value="" className="text-white bg-gray-600">All Locations</option>
+            <option value="">All Locations</option>
             {filterOptions.pickupLocations.map((location) => (
-              <option key={location} value={location} className="text-white bg-gray-700">{location}</option>
+              <option key={location} value={location}>{location}</option>
             ))}
           </select>
         </div>
 
         {/* Budget Range */}
         <div className="space-y-2">
-          <label className="flex text-sm font-semibold text-gray-300 items-center gap-2">
-            <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <label className="flex text-sm font-semibold text-slate-600 items-center gap-2">
+            <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
             </svg>
             Budget Range
@@ -186,10 +165,10 @@ export default function TripFilters({ onFiltersChange }: TripFiltersProps) {
           <select
             value={filters.budget}
             onChange={(e) => handleFilterChange("budget", e.target.value)}
-            className="w-full p-3 border border-gray-500/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-gray-600/30 text-white transition-all duration-200 hover:bg-gray-600/50"
+            className="w-full p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-slate-800 transition-all duration-200"
           >
             {budgetOptions.map((option) => (
-              <option key={option.value} value={option.value} className="text-white bg-gray-700">
+              <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
@@ -198,8 +177,8 @@ export default function TripFilters({ onFiltersChange }: TripFiltersProps) {
 
         {/* Month */}
         <div className="space-y-2">
-          <label className="flex text-sm font-semibold text-gray-300 items-center gap-2">
-            <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <label className="flex text-sm font-semibold text-slate-600 items-center gap-2">
+            <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             Month
@@ -207,19 +186,19 @@ export default function TripFilters({ onFiltersChange }: TripFiltersProps) {
           <select
             value={filters.month}
             onChange={(e) => handleFilterChange("month", e.target.value)}
-            className="w-full p-3 border border-gray-500/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-gray-600/30 text-white transition-all duration-200 hover:bg-gray-600/50"
+            className="w-full p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-slate-800 transition-all duration-200"
           >
-            <option value="" className="text-white bg-gray-600">Any Month</option>
+            <option value="">Any Month</option>
             {["january","february","march","april","may","june","july","august","september","october","november","december"].map((m) => (
-              <option key={m} value={m} className="text-white bg-gray-700">{m.charAt(0).toUpperCase() + m.slice(1)}</option>
+              <option key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</option>
             ))}
           </select>
         </div>
 
         {/* Year */}
         <div className="space-y-2">
-          <label className="flex text-sm font-semibold text-gray-300 items-center gap-2">
-            <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <label className="flex text-sm font-semibold text-slate-600 items-center gap-2">
+            <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             Year
@@ -229,37 +208,52 @@ export default function TripFilters({ onFiltersChange }: TripFiltersProps) {
             placeholder="e.g., 2024"
             value={filters.year}
             onChange={(e) => handleFilterChange("year", e.target.value)}
-            className="w-full p-3 border border-gray-500/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-gray-600/30 text-white transition-all duration-200 hover:bg-gray-600/50 placeholder-gray-400"
+            className="w-full p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-slate-800 transition-all duration-200 placeholder-slate-400"
           />
         </div>
 
         {/* Sort By */}
         <div className="space-y-2">
-          <label className="block text-sm font-semibold text-gray-300">Sort By</label>
+          <label className="block text-sm font-semibold text-slate-600">Sort By</label>
           <select
             value={filters.sortBy}
             onChange={(e) => handleFilterChange("sortBy", e.target.value)}
-            className="w-full p-3 border border-gray-500/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-600/30 text-white transition-all duration-200 hover:bg-gray-600/50"
+            className="w-full p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-slate-800 transition-all duration-200"
           >
-            <option value="createdAt" className="text-white bg-gray-700">Date Created</option>
-            <option value="budget" className="text-white bg-gray-700">Budget</option>
-            <option value="date" className="text-white bg-gray-700">Trip Date</option>
-            <option value="title" className="text-white bg-gray-700">Title</option>
+            <option value="createdAt">Date Created</option>
+            <option value="budget">Budget</option>
+            <option value="date">Trip Date</option>
+            <option value="title">Title</option>
           </select>
         </div>
 
         {/* Sort Order */}
         <div className="space-y-2">
-          <label className="block text-sm font-semibold text-gray-300">Sort Order</label>
+          <label className="block text-sm font-semibold text-slate-600">Sort Order</label>
           <select
             value={filters.sortOrder}
             onChange={(e) => handleFilterChange("sortOrder", e.target.value)}
-            className="w-full p-3 border border-gray-500/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-600/30 text-white transition-all duration-200 hover:bg-gray-600/50"
+            className="w-full p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-slate-800 transition-all duration-200"
           >
-            <option value="desc" className="text-white bg-gray-700">Descending</option>
-            <option value="asc" className="text-white bg-gray-700">Ascending</option>
+            <option value="desc">Descending</option>
+            <option value="asc">Ascending</option>
           </select>
         </div>
+      </div>
+
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <button
+          onClick={applyFilters}
+          className="rounded-xl border border-sky-700 bg-sky-100 px-5 py-2.5 text-sm font-semibold text-sky-900 transition hover:bg-sky-200"
+        >
+          Apply Filters
+        </button>
+        <button
+          onClick={clearFilters}
+          className="rounded-xl border border-slate-300 bg-slate-50 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+        >
+          Clear All
+        </button>
       </div>
     </div>
   );

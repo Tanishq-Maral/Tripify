@@ -8,7 +8,7 @@ export default function Header() {
   // return (
   //   <header className="bg-white shadow">
   //     <div className="container mx-auto p-4 flex items-center">
-  //       <Link to="/" className="font-bold text-xl">Tripify</Link>
+  //       <Link to="/" className="font-bold text-xl">Tripifyyy</Link>
   //       <nav className="ml-auto flex gap-4">
   //         {/* {user && <Link to="/add-trip">Add Trip</Link>} */}
   //         {user ? (

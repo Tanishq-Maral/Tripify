@@ -1,10 +1,25 @@
-import { useEffect, useState, ChangeEvent } from "react";
+import { useEffect, useRef, useState, ChangeEvent, ReactNode } from "react";
 import { useAuth } from "../context/AuthContext";
 import API from "../api/api";
 import TripCard, { Trip } from "../components/TripCard";
 import TripFilters, { Filters } from "../components/TripFilters";
 import { Link, useNavigate } from "react-router-dom";
 import backgroundImage from "../assets/background.jpg";
+
+function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: "neutral" | "success" | "warning" | "info" }) {
+  const toneClass = {
+    neutral: "bg-slate-100 text-slate-700",
+    success: "bg-emerald-100 text-emerald-700",
+    warning: "bg-amber-100 text-amber-700",
+    info: "bg-sky-100 text-sky-700",
+  };
+
+  return (
+    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${toneClass[tone] || toneClass.neutral}`}>
+      {children}
+    </span>
+  );
+}
 
 export default function Home() {
   const { user, logout } = useAuth();
@@ -24,6 +39,8 @@ export default function Home() {
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [hasInitialLoad, setHasInitialLoad] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [showProfileMenu, setShowProfileMenu] = useState<boolean>(false);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
   const loadTrips = async (currentFilters: Filters = { destination: "", pickupLocation: "", budget: "", month: "", year: "", sortBy: "createdAt", sortOrder: "desc" }, search: string = "") => {
     try {
@@ -63,6 +80,20 @@ export default function Home() {
       window.removeEventListener("scroll", onScroll);
     };
   }, [user]);
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, []);
 
   const handleFiltersChange = (newFilters: Filters) => {
     setFilters(newFilters);
@@ -109,12 +140,11 @@ export default function Home() {
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
               <Link to="/" className="flex items-center gap-3 text-white">
                 <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M21 16v-2l-8-5V3.5C13 2.67 12.33 2 11.5 2S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
                   </svg>
                 </div>
-                <span className="text-lg font-bold tracking-wide">Tripify</span>
+                <span className="text-lg font-bold tracking-wide">Tripifyyy</span>
               </Link>
               <div className="flex items-center gap-2 sm:gap-3">
                 <Link
@@ -140,7 +170,7 @@ export default function Home() {
         >
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-              Welcome to <span className="text-blue-400">Tripify</span>
+              Welcome to <span className="text-blue-400">Tripifyyy</span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
               Connect with like-minded travelers and plan amazing trips together.
@@ -162,7 +192,7 @@ export default function Home() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                Why Choose <span className="text-blue-400">Tripify</span>?
+                Why Choose <span className="text-blue-400">Tripifyyy</span>?
               </h2>
               <p className="text-xl text-gray-300 max-w-2xl mx-auto">Everything you need for collaborative travel planning</p>
             </div>
@@ -204,7 +234,7 @@ export default function Home() {
 
         <footer className="bg-black py-4 border-t border-gray-800">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p className="text-gray-400 text-sm">&copy; 2024 Tripify. All rights reserved. Connect, Explore, Remember.</p>
+            <p className="text-gray-400 text-sm">&copy; 2024 Tripifyyy. All rights reserved. Connect, Explore, Remember.</p>
           </div>
         </footer>
       </div>
@@ -212,131 +242,170 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-end mt-1 mb-5 -mr-20">
-          <button
-            onClick={() => { logout(); nav("/"); }}
-            className="bg-gradient-to-r from-blue-900 to-purple-900 hover:from-red-700 hover:to-red-800 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Logout
-          </button>
-        </div>
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-100 via-rose-50 to-slate-100">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 left-[-5rem] h-80 w-80 rounded-full bg-rose-200/45 blur-3xl" />
+        <div className="absolute top-1/3 right-[-6rem] h-96 w-96 rounded-full bg-white/60 blur-3xl" />
+        <div className="absolute bottom-[-7rem] left-1/4 h-96 w-96 rounded-full bg-rose-100/50 blur-3xl" />
+      </div>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <header className="mb-7 rounded-3xl border border-white/80 bg-white/80 p-4 shadow-md backdrop-blur md:p-5">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M21 16v-2l-8-5V3.5C13 2.67 12.33 2 11.5 2S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
+                </svg>
+              </div>
+              <span className="text-2xl font-semibold text-slate-900">Tripifyyy</span>
+            </Link>
+            <div ref={profileMenuRef} className="relative">
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="grid h-10 w-10 place-items-center rounded-full border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100"
+                title={user?.name || user?.email || "Profile"}
+                aria-label="Profile"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A9 9 0 1118.88 17.8M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </button>
+              {showProfileMenu && (
+                <div className="absolute right-0 top-12 z-50 rounded-xl border border-slate-200 bg-white shadow-lg min-w-48">
+                  <div className="p-3 border-b border-slate-100">
+                    <p className="text-sm font-semibold text-slate-900">{user?.name || user?.email}</p>
+                    <p className="text-xs text-slate-500">{user?.email}</p>
+                  </div>
+                  <button
+                    className="block w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 transition"
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      nav("/profile");
+                    }}
+                  >
+                    Profile
+                  </button>
+                  <button
+                    className="block w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 transition"
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      nav("/settings");
+                    }}
+                  >
+                    Settings
+                  </button>
+                  <div className="border-t border-slate-100"></div>
+                  <button
+                    className="block w-full px-4 py-2 text-left rounded-xl text-sm text-red-600 hover:bg-red-50  transition"
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      logout();
+                      nav("/");
+                    }}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
 
-        <div className="text-center mb-12 mt-10">
-          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-6">
-            Discover Your Next
-            <span className="block bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Adventure</span>
-          </h1>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            Connect with fellow travelers and find trips that match your style. Your perfect journey awaits.
-          </p>
-        </div>
+        <section className="space-y-6">
+          <div className="rounded-3xl border border-gray-400 bg-purple-600/30 p-7 text-[#202020] shadow-xl md:p-9 outline-none ring-2 ring-gray-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#9b6907]">Community Travel Planner</p>
+            <h2 className="mt-3 text-3xl font-bold md:text-5xl">Discover Your Next Adventure</h2>
+            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-900 md:text-base">
+              Explore trips created by travelers, filter by your preferences, and start planning memorable experiences together.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Badge tone="info">Smart Search</Badge>
+              <Badge tone="info">Flexible Filters</Badge>
+              <Badge tone="info">Collaborative Trips</Badge>
+              <Badge tone="info">Fast Discovery</Badge>
+            </div>
+          </div>
 
-        <div className="bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700/50 p-8 mb-8">
-          <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
-            <div className="flex-1 w-full lg:w-auto">
-              <div className="relative">
+          <div className="rounded-3xl border border-gray-400 bg-gray-200 p-6 shadow-xl md:p-8">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="relative w-full flex-1">
                 <input
                   type="text"
                   placeholder="Search trips by destination, description..."
                   value={searchTerm}
                   onChange={handleSearchChange}
-                  className="w-full p-4 pl-12 pr-12 bg-gray-700/50 border border-gray-600 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/30 focus:border-blue-500 backdrop-blur-sm transition-all duration-300 placeholder-gray-400 text-white"
+                  className="w-full rounded-xl border border-sky-300 bg-white px-4 py-3 pr-10 text-slate-800 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100"
                 />
-                <svg className="w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
                 {searchTerm && (
-                  <button onClick={clearSearch} className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors duration-200">
+                  <button onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 )}
               </div>
-            </div>
-            <div className="flex gap-3 w-full lg:w-auto">
-              <button
-                onClick={toggleFilters}
-                className="flex items-center gap-3 bg-gray-700 text-gray-200 px-6 py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl border border-gray-600 hover:border-gray-500 transition-all duration-300 hover:scale-105"
-              >
-                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
-                </svg>
-                Filters
-                {hasActiveFilters && (
-                  <span className="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold">!</span>
-                )}
-              </button>
-              <Link
-                to="/add-trip"
-                className="flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white px-6 py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Create Trip
-              </Link>
-            </div>
-          </div>
-          {showFilters && (
-            <div className="mt-6 animate-in slide-in-from-top duration-300">
-              <TripFilters onFiltersChange={handleFiltersChange} />
-            </div>
-          )}
-        </div>
 
-        {loading && (
-          <div className="flex justify-center items-center py-20">
-            <div className="flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
-              <p className="text-gray-400 font-medium">Loading amazing trips...</p>
-            </div>
-          </div>
-        )}
-
-        {!loading && trips.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {trips.map((trip) => (
-              <TripCard key={trip._id} trip={trip} />
-            ))}
-          </div>
-        )}
-
-        {!loading && trips.length === 0 && (
-          <div className="text-center py-16">
-            <div className="max-w-md mx-auto">
-              <div className="w-32 h-32 bg-gradient-to-r from-gray-700 to-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-16 h-16 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-3">
-                {searchTerm || hasActiveFilters ? "No trips found" : "No trips available yet"}
-              </h3>
-              <p className="text-gray-400 mb-8 text-lg">
-                {searchTerm || hasActiveFilters
-                  ? "Try adjusting your search or filters to find more trips."
-                  : "Be the first to create an amazing trip and start your adventure!"}
-              </p>
-              {!searchTerm && !hasActiveFilters && (
+              <div className="flex w-full gap-2 lg:w-auto">
+                <button
+                  onClick={toggleFilters}
+                  className="rounded-xl border border-sky-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-sky-100"
+                >
+                  Filters {hasActiveFilters ? "• Active" : ""}
+                </button>
                 <Link
                   to="/add-trip"
-                  className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  className="rounded-xl border border-sky-700 bg-sky-100 px-5 py-3 text-sm font-semibold text-sky-900 transition hover:bg-sky-200"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
+                  Create Trip
+                </Link>
+              </div>
+            </div>
+
+            {showFilters ? (
+              <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+                <TripFilters onFiltersChange={handleFiltersChange} />
+              </div>
+            ) : null}
+          </div>
+
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="flex flex-col items-center gap-4">
+                <div className="h-16 w-16 animate-spin rounded-full border-4 border-sky-500 border-t-transparent"></div>
+                <p className="font-medium text-slate-500">Loading amazing trips...</p>
+              </div>
+            </div>
+          ) : null}
+
+          {!loading && trips.length > 0 ? (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {trips.map((trip) => (
+                <TripCard key={trip._id} trip={trip} />
+              ))}
+            </div>
+          ) : null}
+
+          {!loading && trips.length === 0 ? (
+            <div className="rounded-3xl border border-white/80 bg-white/70 p-10 text-center shadow-sm">
+              <h3 className="text-2xl font-semibold text-slate-900">
+                {searchTerm || hasActiveFilters ? "No trips found" : "No trips available yet"}
+              </h3>
+              <p className="mx-auto mt-3 max-w-lg text-sm text-slate-600">
+                {searchTerm || hasActiveFilters
+                  ? "Try adjusting your search or filters to find more trips."
+                  : "Be the first to create an amazing trip and start your adventure."}
+              </p>
+              {!searchTerm && !hasActiveFilters ? (
+                <Link
+                  to="/add-trip"
+                  className="mt-6 inline-flex rounded-xl bg-[#0f172a] px-5 py-3 text-sm font-semibold text-[#f8f4ea] transition hover:opacity-90"
+                >
                   Create First Trip
                 </Link>
-              )}
+              ) : null}
             </div>
-          </div>
-        )}
+          ) : null}
+        </section>
       </div>
     </div>
   );

@@ -25,83 +25,87 @@ interface TripCardProps {
 
 export default function TripCard({ trip }: TripCardProps) {
   return (
-    <div className="bg-gray-900 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-700 overflow-hidden group hover:transform hover:-translate-y-2">
-      {/* Header with gradient */}
-      <div className="bg-gradient-to-r from-purple-900 to-purple-700 p-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-        <h3 className="text-xl font-bold text-white line-clamp-2 relative z-10">{trip.title}</h3>
+    <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-gray-500 bg-sky-50/80 shadow-sm backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
+      <div className="border-b border-gray-400 bg-sky-700/15 px-5 py-3 text-gray-900">
+        <h3 className="line-clamp-1 text-xl font-bold">{trip.title}</h3>
+        {trip.description ? <p className="mt-2 line-clamp-1 text-sm text-sky-800">{trip.description}</p> : null}
       </div>
 
-      {/* Content */}
-      <div className="p-6">
-        {/* Destination */}
-        <div className="flex items-center gap-3 mb-4 group/item">
-          <div className="w-10 h-10 bg-gray-700 rounded-xl flex items-center justify-center group-hover/item:scale-110 transition-transform duration-200">
-            <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="flex-1 space-y-4 px-5 py-5">
+        <div className="flex items-start gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-200">
+            <svg className="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             </svg>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-gray-400 font-medium">Destination</p>
-            <p className="font-bold text-blue-100 truncate">{trip.destination}</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Destination</p>
+            <p className="truncate text-sm font-semibold text-slate-900">{trip.destination}</p>
           </div>
         </div>
 
-        {/* Pickup Location */}
-        <div className="flex items-center gap-3 mb-4 group/item">
-          <div className="w-10 h-10 bg-gray-700 rounded-xl flex items-center justify-center group-hover/item:scale-110 transition-transform duration-200">
-            <svg className="w-5 h-5 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        <div className="flex items-start gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-200">
+            <svg className="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-gray-400 font-medium">Pickup Location</p>
-            <p className="font-bold text-blue-100 truncate">{trip.pickupLocation}</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Pickup</p>
+            <p className="truncate text-sm font-semibold text-slate-900">{trip.pickupLocation}</p>
           </div>
         </div>
 
-        {/* Date */}
-        {trip.date && (
-          <div className="flex items-center gap-3 mb-4 group/item">
-            <div className="w-10 h-10 bg-gray-700 rounded-xl flex items-center justify-center group-hover/item:scale-110 transition-transform duration-200">
-              <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+        <div className="grid grid-cols-2 gap-4 pt-2">
+          {trip.date && (
+            <div className="flex items-start gap-2">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-200">
+                <svg className="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase text-slate-500">Date</p>
+                <p className="truncate text-sm font-semibold text-slate-700">{trip.date}</p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-gray-400 font-medium">Trip Date</p>
-              <p className="font-bold text-blue-100">{trip.date}</p>
+          )}
+          {trip.budget && (
+            <div className="flex items-start gap-2">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-600 font-bold text-sm">
+                ₹
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase text-slate-500">Budget</p>
+                <p className="text-sm font-semibold text-slate-700">₹{trip.budget}</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Budget */}
-        {trip.budget && (
-          <div className="flex items-center gap-3 mb-6 group/item">
-            <div className="w-10 h-10 bg-gray-700 rounded-xl flex items-center justify-center group-hover/item:scale-110 transition-transform duration-200">
-              <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+        <div className="border-t border-sky-100 pt-4">
+          <div className="flex items-center gap-3">
+            <div className="flex -space-x-3">
+              {trip.members.slice(0, 3).map((member) => (
+                <div key={member._id} className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#833e98] text-xs font-bold text-[#f8f4ea]">
+                  {member.name.charAt(0).toUpperCase()}
+                </div>
+              ))}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-gray-400 font-medium">Budget</p>
-              <p className="font-bold text-emerald-400 text-lg">₹{trip.budget}</p>
-            </div>
+            <span className="text-xs font-semibold text-slate-600">{trip.members.length} member{trip.members.length !== 1 ? "s" : ""}</span>
           </div>
-        )}
-
-        {/* View Details Button */}
-        <Link
-          to={`/trips/${trip._id}`}
-          className="w-full bg-gradient-to-r from-purple-800 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 transform hover:scale-[1.02] flex items-center justify-center gap-2 shadow-lg hover:shadow-xl relative overflow-hidden group/btn"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700"></div>
-          <span className="relative z-10">View Details</span>
-          <svg className="w-4 h-4 relative z-10 group-hover/btn:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-          </svg>
-        </Link>
+        </div>
       </div>
-    </div>
+
+      <Link
+        to={`/trips/${trip._id}`}
+        className="mx-5 mb-5 flex items-center justify-center gap-2 rounded-xl border border-sky-700 bg-sky-100 px-5 py-3 text-sm font-semibold text-sky-900 transition hover:bg-sky-200"
+      >
+        <span>Explore Trip</span>
+        <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+        </svg>
+      </Link>
+    </article>
   );
 }
