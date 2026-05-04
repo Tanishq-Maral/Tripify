@@ -13,20 +13,30 @@ connectDB();
 const app: Application = express();
 
 app.use(
-  // Allow local development and the production frontend domain configured via FRONTEND_URL
-  // FRONTEND_URL should be e.g. "https://your-frontend.vercel.app"
-  (() => {
-    const allowedOrigins = [process.env.FRONTEND_URL, "http://localhost:5173", "http://127.0.0.1:5173"].filter(Boolean) as string[];
-    return cors({
-      origin: (origin, callback) => {
-        // allow requests with no origin like curl or server-to-server
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin)) return callback(null, true);
-        return callback(new Error("CORS policy: Origin not allowed"), false);
-      },
-      credentials: true,
-    });
-  })()
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      const allowedOrigins = [
+        process.env.FRONTEND_URL,
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
+      ].filter(Boolean);
+
+      // Normalize origin (remove trailing slash)
+      const normalizedOrigin = origin.replace(/\/$/, "");
+
+      const isAllowed = allowedOrigins.some((allowed) =>
+        normalizedOrigin === allowed?.replace(/\/$/, "")
+      );
+
+      if (isAllowed) return callback(null, true);
+
+      console.log("Blocked by CORS:", origin); // debug
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  })
 );
 app.use(express.json());
 
