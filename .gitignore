@@ -59,3 +59,5 @@ tmp/
 *.tar
 *.bak
 *.tmp
+
+DEPLOYMENT_EC2_AWS.md

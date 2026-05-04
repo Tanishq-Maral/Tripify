@@ -10,7 +10,20 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (user) {
-      const newSocket: Socket = io("http://localhost:5000", {
+      // Get socket server URL from env, default to localhost for dev
+      const socketUrl = (() => {
+        const apiUrl = import.meta.env.VITE_API_URL?.trim() || "http://localhost:5000";
+        // Convert http/https to ws/wss
+        if (apiUrl.startsWith("https://")) {
+          return apiUrl.replace("https://", "wss://");
+        }
+        if (apiUrl.startsWith("http://")) {
+          return apiUrl.replace("http://", "ws://");
+        }
+        return apiUrl;
+      })();
+
+      const newSocket: Socket = io(socketUrl, {
         withCredentials: true,
         transports: ["websocket", "polling"],
       });
