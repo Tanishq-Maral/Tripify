@@ -13,10 +13,20 @@ connectDB();
 const app: Application = express();
 
 app.use(
-  cors({
-    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
-    credentials: true,
-  })
+  // Allow local development and the production frontend domain configured via FRONTEND_URL
+  // FRONTEND_URL should be e.g. "https://your-frontend.vercel.app"
+  (() => {
+    const allowedOrigins = [process.env.FRONTEND_URL, "http://localhost:5173", "http://127.0.0.1:5173"].filter(Boolean) as string[];
+    return cors({
+      origin: (origin, callback) => {
+        // allow requests with no origin like curl or server-to-server
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error("CORS policy: Origin not allowed"), false);
+      },
+      credentials: true,
+    });
+  })()
 );
 app.use(express.json());
 
