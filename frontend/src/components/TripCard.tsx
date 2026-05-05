@@ -31,14 +31,14 @@ export default function TripCard({ trip, currentUserId }: TripCardProps) {
     <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-gray-500 bg-sky-50/80 shadow-sm backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
       <div className="border-b border-gray-400 bg-sky-700/15 px-5 py-3 text-gray-900">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="line-clamp-1 text-xl font-bold">{trip.title}</h3>
+          <h3 className="line-clamp-1 text-2xl font-bold">{trip.title}</h3>
           {isOwnedByCurrentUser ? (
             <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-800">
               Your Trip
             </span>
           ) : null}
         </div>
-        {trip.description ? <p className="mt-2 line-clamp-1 text-sm text-sky-800">{trip.description}</p> : null}
+        {trip.description ? <p className="mt-2 line-clamp-1 text-xs text-sky-800">{trip.description}</p> : null}
       </div>
 
       <div className="flex-1 space-y-4 px-5 py-5">

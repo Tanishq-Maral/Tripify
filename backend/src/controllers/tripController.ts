@@ -222,11 +222,6 @@ export const getTripMessages = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    if (req.user.role !== "user") {
-      res.status(403).json({ message: "Only users can access trip chat" });
-      return;
-    }
-
     const trip = await Trip.findById(id);
     if (!trip) {
       res.status(404).json({ message: "Trip not found" });
@@ -234,9 +229,15 @@ export const getTripMessages = async (req: Request, res: Response): Promise<void
     }
 
     const isMember = trip.members.some((memberId) => String(memberId) === req.user?._id);
+    const isCreator = String(trip.createdBy) === req.user?._id;
 
-    if (!isMember) {
+    if (req.user.role === "user" && !isMember) {
       res.status(403).json({ message: "You must be a member of this trip to view messages" });
+      return;
+    }
+
+    if (req.user.role === "creator" && !isCreator) {
+      res.status(403).json({ message: "Only the trip creator can access this chat" });
       return;
     }
 
@@ -261,11 +262,6 @@ export const sendTripMessage = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    if (req.user.role !== "user") {
-      res.status(403).json({ message: "Only users can send trip chat messages" });
-      return;
-    }
-
     if (!text || !text.trim()) {
       res.status(400).json({ message: "Message text is required" });
       return;
@@ -278,9 +274,15 @@ export const sendTripMessage = async (req: Request, res: Response): Promise<void
     }
 
     const isMember = trip.members.some((memberId) => String(memberId) === req.user?._id);
+    const isCreator = String(trip.createdBy) === req.user?._id;
 
-    if (!isMember) {
+    if (req.user.role === "user" && !isMember) {
       res.status(403).json({ message: "You must be a member of this trip to send messages" });
+      return;
+    }
+
+    if (req.user.role === "creator" && !isCreator) {
+      res.status(403).json({ message: "Only the trip creator can send messages in this trip" });
       return;
     }
 
