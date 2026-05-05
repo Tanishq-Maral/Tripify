@@ -157,6 +157,23 @@ export default function TripDetails() {
     }
   };
 
+  const removeMember = async (memberId: string) => {
+    if (!trip || !isCreator) return;
+
+    const member = trip.members.find((m) => m._id === memberId);
+    const memberName = member?.name || "this member";
+    const confirmed = window.confirm(`Remove ${memberName} from this trip?`);
+    if (!confirmed) return;
+
+    try {
+      const response = await API.delete<TripDetail>(`/trips/${trip._id}/members/${memberId}`);
+      setTrip(response.data);
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || "Failed to remove member.";
+      alert(errorMessage);
+    }
+  };
+
   const sendMessage = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!message.trim() || sending) return;
@@ -241,6 +258,7 @@ export default function TripDetails() {
 
   const isMember = trip.members.some((member) => member._id === user?._id);
   const isCreator = trip.createdBy._id === user?._id;
+  const canJoinTrip = user?.role === "user" && !isMember && !isCreator;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-100 via-rose-50 to-slate-100">
@@ -286,7 +304,7 @@ export default function TripDetails() {
             )}
 
             <div className="flex gap-3">
-              {!isMember && !isCreator && (
+              {canJoinTrip && (
                 <button
                   onClick={joinTrip}
                   className="rounded-xl border border-sky-700 bg-sky-100 px-5 py-3 text-sm font-semibold text-sky-900 transition hover:bg-sky-200"
@@ -326,6 +344,12 @@ export default function TripDetails() {
               )}
             </div>
           </div>
+
+          {user?.role === "creator" && !isCreator ? (
+            <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              You can view this trip, but only users can join trips. As a creator, you can fully manage trips that you create.
+            </div>
+          ) : null}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <div className="space-y-6">
@@ -460,6 +484,14 @@ export default function TripDetails() {
                         </p>
                         <p className="text-sm text-slate-600">{member.email}</p>
                       </div>
+                      {isCreator && member._id !== trip.createdBy._id && (
+                        <button
+                          onClick={() => removeMember(member._id)}
+                          className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-100"
+                        >
+                          Remove
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>

@@ -25,9 +25,17 @@ interface BudgetOption {
 
 interface TripFiltersProps {
   onFiltersChange: (filters: Filters) => void;
+  isCreator?: boolean;
+  tripViewMode?: "all" | "mine";
+  onTripViewModeChange?: (mode: "all" | "mine") => void;
 }
 
-export default function TripFilters({ onFiltersChange }: TripFiltersProps) {
+export default function TripFilters({
+  onFiltersChange,
+  isCreator = false,
+  tripViewMode = "all",
+  onTripViewModeChange,
+}: TripFiltersProps) {
   const [filters, setFilters] = useState<Filters>({
     destination: "",
     pickupLocation: "",
@@ -111,6 +119,39 @@ export default function TripFilters({ onFiltersChange }: TripFiltersProps) {
           </div>
         </div>
       </div>
+
+      {isCreator && onTripViewModeChange ? (
+        <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="mb-3">
+            <h4 className="text-sm font-semibold text-slate-900">Trip View</h4>
+            <p className="text-xs text-slate-500">Switch between community trips and only the trips you created.</p>
+          </div>
+          <div className="inline-flex rounded-xl border border-slate-300 bg-white p-1">
+            <button
+              type="button"
+              onClick={() => onTripViewModeChange("all")}
+              className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
+                tripViewMode === "all"
+                  ? "bg-sky-100 text-sky-900"
+                  : "text-slate-700 hover:bg-slate-100"
+              }`}
+            >
+              All Trips
+            </button>
+            <button
+              type="button"
+              onClick={() => onTripViewModeChange("mine")}
+              className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
+                tripViewMode === "mine"
+                  ? "bg-sky-100 text-sky-900"
+                  : "text-slate-700 hover:bg-slate-100"
+              }`}
+            >
+              My Trips
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {/* Filters Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

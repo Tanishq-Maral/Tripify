@@ -30,6 +30,7 @@ const getRememberedAccounts = (): string[] => {
 
 export default function Auth() {
   const [mode, setMode] = useState<"login" | "signup">("login");
+  const [accountType, setAccountType] = useState<"creator" | "user">("user");
   const [form, setForm] = useState<AuthForm>({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState<boolean>(false);
   const [rememberMe, setRememberMe] = useState<boolean>(false);
@@ -71,7 +72,7 @@ export default function Auth() {
     setLoading(true);
     try {
       if (mode === "signup") {
-        const res = await API.post<AuthUser>("/auth/signup", form);
+        const res = await API.post<AuthUser>(`/auth/signup/${accountType}`, form);
         login(res.data, res.data.token, rememberMe);
       } else {
         const res = await API.post<AuthUser>("/auth/login", {
@@ -133,7 +134,7 @@ export default function Auth() {
 
   if (forgotPasswordMode) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-[100dvh] bg-gray-900 flex items-center justify-center px-4 py-6 overflow-y-auto">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-purple-900/20 to-gray-900"></div>
         <div className="absolute top-10 left-10 w-52 h-52 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-10 right-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
@@ -202,7 +203,7 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-[100dvh] bg-gray-900 flex items-center justify-center px-4 py-6 overflow-y-auto">
       <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-purple-900/20 to-gray-900"></div>
       <div className="absolute top-10 left-10 w-52 h-52 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
       <div className="absolute bottom-10 right-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
@@ -225,6 +226,36 @@ export default function Auth() {
           </div>
 
           <form onSubmit={submit} className="space-y-4">
+            {mode === "signup" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Account Type</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAccountType("user")}
+                  className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+                    accountType === "user"
+                      ? "border-blue-500 bg-blue-600 text-white"
+                      : "border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600"
+                  }`}
+                >
+                  User
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAccountType("creator")}
+                  className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+                    accountType === "creator"
+                      ? "border-blue-500 bg-blue-600 text-white"
+                      : "border-gray-600 bg-gray-700 text-gray-200 hover:bg-gray-600"
+                  }`}
+                >
+                  Creator
+                </button>
+              </div>
+            </div>
+            )}
+
             {mode === "signup" && (
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>

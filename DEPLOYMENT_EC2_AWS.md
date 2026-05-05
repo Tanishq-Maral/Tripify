@@ -146,7 +146,7 @@ npm run build
 ### Step 3.6 Create Environment File
 ```bash
 cat > /opt/tripify/backend/.env << 'EOF'
-MONGO_URI=mongodb+srv://tripify_user:MySecurePassword123@cluster0.abcde.mongodb.net/?retryWrites=true&w=majority
+MONGO_URI=mongodb+srv://tripify_user:MySecurePassword123@cluster0.abcde.mongodb.net/tripify?retryWrites=true&w=majority
 JWT_SECRET=your_jwt_secret_key_here_change_this
 PORT=5000
 NODE_ENV=production

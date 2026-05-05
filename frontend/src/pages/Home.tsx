@@ -24,8 +24,10 @@ function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: "ne
 export default function Home() {
   const { user, logout } = useAuth();
   const nav = useNavigate();
+  const isCreator = user?.role === "creator";
   const [showLandingHeader, setShowLandingHeader] = useState<boolean>(false);
   const [trips, setTrips] = useState<Trip[]>([]);
+  const [tripViewMode, setTripViewMode] = useState<"all" | "mine">("all");
   const [loading, setLoading] = useState<boolean>(true);
   const [filters, setFilters] = useState<Filters>({
     destination: "",
@@ -125,6 +127,11 @@ export default function Home() {
     filters.year !== "" ||
     (filters.sortBy !== "createdAt" || filters.sortOrder !== "desc");
 
+  const displayedTrips =
+    isCreator && tripViewMode === "mine"
+      ? trips.filter((trip) => trip.createdBy?._id === user?._id)
+      : trips;
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-900">
@@ -139,7 +146,7 @@ export default function Home() {
           {/* <div className="mx-3 mt-3 rounded-2xl border border-white/20 bg-slate-900/35 backdrop-blur-xl shadow-2xl shadow-black/30"> */}
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
               <Link to="/" className="flex items-center gap-3 text-white">
-                <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-800 flex items-center justify-center shadow-lg shadow-blue-500/30">
                   <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M21 16v-2l-8-5V3.5C13 2.67 12.33 2 11.5 2S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
                   </svg>
@@ -252,7 +259,7 @@ export default function Home() {
         <header className="mb-7 rounded-3xl border border-white/80 bg-white/80 p-4 shadow-md backdrop-blur md:p-5">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-900 flex items-center justify-center shadow-lg shadow-blue-500/30">
                 <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M21 16v-2l-8-5V3.5C13 2.67 12.33 2 11.5 2S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
                 </svg>
@@ -312,7 +319,7 @@ export default function Home() {
         </header>
 
         <section className="space-y-6">
-          <div className="rounded-3xl border border-gray-400 bg-purple-600/30 p-7 text-[#202020] shadow-xl md:p-9 outline-none ring-2 ring-gray-300">
+          <div className="rounded-3xl border border-gray-500 bg-purple-600/30 p-7 text-[#202020] shadow-xl md:p-9 ">
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#9b6907]">Community Travel Planner</p>
             <h2 className="mt-3 text-3xl font-bold md:text-5xl">Discover Your Next Adventure</h2>
             <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-900 md:text-base">
@@ -326,7 +333,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-gray-400 bg-gray-200 p-6 shadow-xl md:p-8">
+          <div className="rounded-3xl border border-gray-500 bg-gray-200 p-6 shadow-xl md:p-8">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="relative w-full flex-1">
                 <input
@@ -334,7 +341,7 @@ export default function Home() {
                   placeholder="Search trips by destination, description..."
                   value={searchTerm}
                   onChange={handleSearchChange}
-                  className="w-full rounded-xl border border-sky-300 bg-white px-4 py-3 pr-10 text-slate-800 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100"
+                  className="w-full rounded-xl border border-sky-300 bg-white px-4 py-3 pr-10 text-slate-800 shadow-sm focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-300"
                 />
                 {searchTerm && (
                   <button onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
@@ -348,22 +355,29 @@ export default function Home() {
               <div className="flex w-full gap-2 lg:w-auto">
                 <button
                   onClick={toggleFilters}
-                  className="rounded-xl border border-sky-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-sky-100"
+                  className="rounded-xl border border-sky-500 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-sky-100"
                 >
                   Filters {hasActiveFilters ? "• Active" : ""}
                 </button>
-                <Link
-                  to="/add-trip"
-                  className="rounded-xl border border-sky-700 bg-sky-100 px-5 py-3 text-sm font-semibold text-sky-900 transition hover:bg-sky-200"
-                >
-                  Create Trip
-                </Link>
+                {isCreator ? (
+                  <Link
+                    to="/add-trip"
+                    className="rounded-xl border border-sky-500 bg-sky-100 px-5 py-3 text-sm font-semibold text-sky-900 transition hover:bg-sky-200"
+                  >
+                    Create Trip
+                  </Link>
+                ) : null}
               </div>
             </div>
 
             {showFilters ? (
               <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
-                <TripFilters onFiltersChange={handleFiltersChange} />
+                <TripFilters
+                  onFiltersChange={handleFiltersChange}
+                  isCreator={isCreator}
+                  tripViewMode={tripViewMode}
+                  onTripViewModeChange={setTripViewMode}
+                />
               </div>
             ) : null}
           </div>
@@ -377,25 +391,31 @@ export default function Home() {
             </div>
           ) : null}
 
-          {!loading && trips.length > 0 ? (
+          {!loading && displayedTrips.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {trips.map((trip) => (
-                <TripCard key={trip._id} trip={trip} />
+              {displayedTrips.map((trip) => (
+                <TripCard key={trip._id} trip={trip} currentUserId={user?._id} />
               ))}
             </div>
           ) : null}
 
-          {!loading && trips.length === 0 ? (
+          {!loading && displayedTrips.length === 0 ? (
             <div className="rounded-3xl border border-white/80 bg-white/70 p-10 text-center shadow-sm">
               <h3 className="text-2xl font-semibold text-slate-900">
-                {searchTerm || hasActiveFilters ? "No trips found" : "No trips available yet"}
+                {searchTerm || hasActiveFilters
+                  ? "No trips found"
+                  : isCreator && tripViewMode === "mine"
+                  ? "You have not created any trips yet"
+                  : "No trips available yet"}
               </h3>
               <p className="mx-auto mt-3 max-w-lg text-sm text-slate-600">
                 {searchTerm || hasActiveFilters
                   ? "Try adjusting your search or filters to find more trips."
+                  : isCreator && tripViewMode === "mine"
+                  ? "Switch to All Trips to explore community trips, or create your first trip now."
                   : "Be the first to create an amazing trip and start your adventure."}
               </p>
-              {!searchTerm && !hasActiveFilters ? (
+              {!searchTerm && !hasActiveFilters && isCreator ? (
                 <Link
                   to="/add-trip"
                   className="mt-6 inline-flex rounded-xl bg-[#0f172a] px-5 py-3 text-sm font-semibold text-[#f8f4ea] transition hover:opacity-90"

@@ -71,6 +71,7 @@ export const firebaseLogin = async (req: Request, res: Response): Promise<void> 
       _id: user._id,
       name: user.name,
       email: user.email,
+      role: user.role,
       token: generateToken(String(user._id)),
     });
   } catch (err) {

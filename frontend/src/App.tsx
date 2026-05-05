@@ -4,6 +4,8 @@ import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import AddTrip from "./pages/AddTrip";
 import TripDetails from "./pages/TripDetails";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import { AuthProvider } from "./context/AuthContext";
 import { SocketProvider } from "./context/SocketContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -30,6 +32,22 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <TripDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
                 </ProtectedRoute>
               }
             />

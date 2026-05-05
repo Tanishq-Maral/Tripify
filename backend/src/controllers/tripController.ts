@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Trip from "../models/Trip.js";
 import Message from "../models/Message.js";
+import { Types } from "mongoose";
 
 interface FilterQuery {
   $or?: object[];
@@ -89,6 +90,11 @@ export const createTrip = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
+    if (req.user.role !== "creator") {
+      res.status(403).json({ message: "Only creators can create trips" });
+      return;
+    }
+
     const { title, description, destination, pickupLocation, budget, date } =
       req.body as {
         title: string;
@@ -155,6 +161,16 @@ export const getTripById = async (req: Request, res: Response): Promise<void> =>
 
 export const joinTrip = async (req: Request, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+      res.status(401).json({ message: "Authentication required" });
+      return;
+    }
+
+    if (req.user.role !== "user") {
+      res.status(403).json({ message: "Only users can join trips" });
+      return;
+    }
+
     const trip = await Trip.findById(req.params.id);
 
     if (!trip) {
@@ -162,8 +178,9 @@ export const joinTrip = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    if (!trip.members.includes(req.user._id)) {
-      trip.members.push(req.user._id);
+    const alreadyMember = trip.members.some((memberId) => String(memberId) === req.user?._id);
+    if (!alreadyMember) {
+      trip.members.push(new Types.ObjectId(req.user._id));
       await trip.save();
     }
 
@@ -200,15 +217,23 @@ export const getTripMessages = async (req: Request, res: Response): Promise<void
   try {
     const { id } = req.params;
 
+    if (!req.user) {
+      res.status(401).json({ message: "Authentication required" });
+      return;
+    }
+
+    if (req.user.role !== "user") {
+      res.status(403).json({ message: "Only users can access trip chat" });
+      return;
+    }
+
     const trip = await Trip.findById(id);
     if (!trip) {
       res.status(404).json({ message: "Trip not found" });
       return;
     }
 
-    const isMember =
-      trip.members.includes(req.user._id) ||
-      trip.createdBy.equals(req.user._id);
+    const isMember = trip.members.some((memberId) => String(memberId) === req.user?._id);
 
     if (!isMember) {
       res.status(403).json({ message: "You must be a member of this trip to view messages" });
@@ -231,6 +256,16 @@ export const sendTripMessage = async (req: Request, res: Response): Promise<void
     const { id } = req.params;
     const { text } = req.body as { text: string };
 
+    if (!req.user) {
+      res.status(401).json({ message: "Authentication required" });
+      return;
+    }
+
+    if (req.user.role !== "user") {
+      res.status(403).json({ message: "Only users can send trip chat messages" });
+      return;
+    }
+
     if (!text || !text.trim()) {
       res.status(400).json({ message: "Message text is required" });
       return;
@@ -242,9 +277,7 @@ export const sendTripMessage = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    const isMember =
-      trip.members.includes(req.user._id) ||
-      trip.createdBy.equals(req.user._id);
+    const isMember = trip.members.some((memberId) => String(memberId) === req.user?._id);
 
     if (!isMember) {
       res.status(403).json({ message: "You must be a member of this trip to send messages" });
@@ -290,6 +323,16 @@ export const updateTrip = async (req: Request, res: Response): Promise<void> => 
     const trip = await Trip.findById(id);
     if (!trip) {
       res.status(404).json({ message: "Trip not found" });
+      return;
+    }
+
+    if (!req.user) {
+      res.status(401).json({ message: "Authentication required" });
+      return;
+    }
+
+    if (req.user.role !== "creator") {
+      res.status(403).json({ message: "Only creators can manage trips" });
       return;
     }
 
@@ -339,3 +382,53 @@ function isValidDate(dateString: string): boolean {
   ];
   return patterns.some((pattern) => pattern.test(dateString));
 }
+
+export const removeTripMember = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id, memberId } = req.params;
+
+    if (!req.user) {
+      res.status(401).json({ message: "Authentication required" });
+      return;
+    }
+
+    if (req.user.role !== "creator") {
+      res.status(403).json({ message: "Only creators can remove members" });
+      return;
+    }
+
+    const trip = await Trip.findById(id);
+
+    if (!trip) {
+      res.status(404).json({ message: "Trip not found" });
+      return;
+    }
+
+    if (!trip.createdBy.equals(req.user._id)) {
+      res.status(403).json({ message: "You can only remove members from trips you created" });
+      return;
+    }
+
+    if (String(trip.createdBy) === memberId) {
+      res.status(400).json({ message: "Trip creator cannot be removed" });
+      return;
+    }
+
+    const beforeCount = trip.members.length;
+    trip.members = trip.members.filter((existingMemberId) => String(existingMemberId) !== memberId);
+
+    if (trip.members.length === beforeCount) {
+      res.status(404).json({ message: "User is not a member of this trip" });
+      return;
+    }
+
+    await trip.save();
+    await trip.populate("members", "name email");
+    await trip.populate("createdBy", "name email");
+
+    res.status(200).json(trip);
+  } catch (error) {
+    console.error("Error removing trip member:", error);
+    res.status(500).json({ message: "Error removing trip member", error: (error as Error).message });
+  }
+};

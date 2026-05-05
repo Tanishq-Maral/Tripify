@@ -1,6 +1,7 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import API from "../api/api";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 interface TripForm {
   title: string;
@@ -12,6 +13,7 @@ interface TripForm {
 }
 
 export default function AddTrip() {
+  const { user } = useAuth();
   const [form, setForm] = useState<TripForm>({
     title: "",
     destination: "",
@@ -42,10 +44,32 @@ export default function AddTrip() {
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (user?.role !== "creator") {
+      alert("Only creator accounts can create trips.");
+      nav("/");
+      return;
+    }
     if (!validateDate(form.date)) return;
     await API.post("/trips", form);
     nav("/");
   };
+
+  if (user?.role !== "creator") {
+    return (
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-100 via-rose-50 to-slate-100 flex items-center justify-center">
+        <div className="rounded-3xl border border-amber-300 bg-amber-50 p-8 text-center shadow-md">
+          <h2 className="text-2xl font-bold text-amber-900">Creator Access Only</h2>
+          <p className="mt-2 text-amber-800">Switch to a creator account to create and manage trips.</p>
+          <button
+            onClick={() => nav("/")}
+            className="mt-5 rounded-xl border border-amber-500 bg-white px-5 py-3 text-sm font-semibold text-amber-900 transition hover:bg-amber-100"
+          >
+            Back to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-100 via-rose-50 to-slate-100">

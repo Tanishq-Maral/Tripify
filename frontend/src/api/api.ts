@@ -1,7 +1,12 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
 
+const getApiBaseUrl = (): string => {
+  const rawBase = import.meta.env.VITE_API_URL?.trim() || "http://localhost:5000";
+  return rawBase.endsWith("/api") ? rawBase : `${rawBase}/api`;
+};
+
 const API: AxiosInstance = axios.create({
-  baseURL: (import.meta.env.VITE_API_URL?.trim() || "http://localhost:5000") + "/api",
+  baseURL: getApiBaseUrl(),
   withCredentials: true,
 });
 

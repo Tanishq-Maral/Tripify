@@ -13,14 +13,15 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
       // Get socket server URL from env, default to localhost for dev
       const socketUrl = (() => {
         const apiUrl = import.meta.env.VITE_API_URL?.trim() || "http://localhost:5000";
+        const serverUrl = apiUrl.endsWith("/api") ? apiUrl.slice(0, -4) : apiUrl;
         // Convert http/https to ws/wss
-        if (apiUrl.startsWith("https://")) {
-          return apiUrl.replace("https://", "wss://");
+        if (serverUrl.startsWith("https://")) {
+          return serverUrl.replace("https://", "wss://");
         }
-        if (apiUrl.startsWith("http://")) {
-          return apiUrl.replace("http://", "ws://");
+        if (serverUrl.startsWith("http://")) {
+          return serverUrl.replace("http://", "ws://");
         }
-        return apiUrl;
+        return serverUrl;
       })();
 
       const newSocket: Socket = io(socketUrl, {

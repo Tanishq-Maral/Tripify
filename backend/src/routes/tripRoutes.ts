@@ -8,6 +8,7 @@ import {
   getTripMessages,
   sendTripMessage,
   updateTrip,
+  removeTripMember,
 } from "../controllers/tripController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -19,6 +20,7 @@ router.get("/:id", getTripById);
 router.post("/", protect, createTrip);
 router.post("/:id/join", protect, joinTrip);
 router.put("/:id", protect, updateTrip);
+router.delete("/:id/members/:memberId", protect, removeTripMember);
 
 router.get("/:id/messages", protect, getTripMessages);
 router.post("/:id/messages", protect, sendTripMessage);
