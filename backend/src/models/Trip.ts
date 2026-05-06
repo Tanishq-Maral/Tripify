@@ -6,7 +6,8 @@ export interface ITrip extends Document {
   destination: string;
   pickupLocation: string;
   budget?: number;
-  date?: string;
+  startDate?: Date;
+  endDate?: Date;
   members: Types.ObjectId[];
   createdBy: Types.ObjectId;
   createdAt: Date;
@@ -20,7 +21,8 @@ const tripSchema = new Schema<ITrip>(
     destination: { type: String, required: true },
     pickupLocation: { type: String, required: true },
     budget: { type: Number },
-    date: { type: String },
+    startDate: { type: Date },
+    endDate: { type: Date },
     members: [{ type: Schema.Types.ObjectId, ref: "User" }],
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },

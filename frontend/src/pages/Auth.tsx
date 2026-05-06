@@ -9,7 +9,13 @@ interface AuthForm {
   name: string;
   email: string;
   password: string;
+  phone?: string;
 }
+
+const isValidPhoneNumber = (phone: string): boolean => {
+  const phoneRegex = /^[0-9]{10}$/;
+  return phoneRegex.test(phone.replace(/\D/g, ''));
+};
 
 const REMEMBERED_ACCOUNTS_KEY = "rememberedAccounts";
 const MAX_REMEMBERED_ACCOUNTS = 10;
@@ -31,8 +37,9 @@ const getRememberedAccounts = (): string[] => {
 export default function Auth() {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [accountType, setAccountType] = useState<"creator" | "user">("user");
-  const [form, setForm] = useState<AuthForm>({ name: "", email: "", password: "" });
+  const [form, setForm] = useState<AuthForm>({ name: "", email: "", password: "", phone: "" });
   const [loading, setLoading] = useState<boolean>(false);
+  const [phoneError, setPhoneError] = useState<string>("");
   const [rememberMe, setRememberMe] = useState<boolean>(false);
   const [rememberedAccounts, setRememberedAccounts] = useState<string[]>([]);
   const [isEmailFieldHovered, setIsEmailFieldHovered] = useState<boolean>(false);
@@ -69,9 +76,20 @@ export default function Auth() {
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setPhoneError("");
     setLoading(true);
     try {
       if (mode === "signup") {
+        if (accountType === "creator" && !form.phone?.trim()) {
+          setPhoneError("Phone number is required for creators");
+          setLoading(false);
+          return;
+        }
+        if (accountType === "creator" && form.phone && !isValidPhoneNumber(form.phone)) {
+          setPhoneError("Please enter a valid 10-digit phone number");
+          setLoading(false);
+          return;
+        }
         const res = await API.post<AuthUser>(`/auth/signup/${accountType}`, form);
         login(res.data, res.data.token, rememberMe);
       } else {
@@ -208,8 +226,8 @@ export default function Auth() {
       <div className="absolute top-10 left-10 w-52 h-52 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
       <div className="absolute bottom-10 right-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
 
-      <div className="relative w-full max-w-md mx-auto bg-gray-800 rounded-2xl overflow-hidden shadow-2xl">
-        <div className="p-8">
+      <div className="relative w-full max-w-md mx-auto bg-gray-800 rounded-2xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
+        <div className="p-8 overflow-y-auto flex-1">
           <div className="text-center mb-6">
             <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -257,6 +275,7 @@ export default function Auth() {
             )}
 
             {mode === "signup" && (
+              <>
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
                 <div className="relative">
@@ -272,6 +291,32 @@ export default function Auth() {
                   </svg>
                 </div>
               </div>
+              {accountType === "creator" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Phone Number</label>
+                  <div className="relative">
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      placeholder="Enter 10-digit phone number"
+                      value={form.phone || ""}
+                      onChange={(e) => {
+                        const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        setForm({ ...form, phone: digitsOnly });
+                        setPhoneError("");
+                      }}
+                      maxLength={10}
+                      className={`w-full px-4 py-3 bg-gray-700 border ${phoneError ? 'border-red-500' : 'border-gray-600'} rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm`}
+                      required={accountType === "creator"}
+                    />
+                    <svg className="w-4 h-4 absolute right-3 top-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                  </div>
+                  {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
+                </div>
+              )}
+              </>
             )}
 
             <div>

@@ -6,6 +6,7 @@ import { useAuth, AuthUser } from "../context/AuthContext";
 interface SettingsForm {
   name: string;
   email: string;
+  phone: string;
   password: string;
   confirmPassword: string;
 }
@@ -14,6 +15,7 @@ interface ProfileData {
   _id: string;
   name: string;
   email: string;
+  phone?: string;
   role: "creator" | "user";
 }
 
@@ -22,6 +24,7 @@ export default function Settings() {
   const [form, setForm] = useState<SettingsForm>({
     name: "",
     email: "",
+    phone: "",
     password: "",
     confirmPassword: "",
   });
@@ -39,6 +42,7 @@ export default function Settings() {
           ...prev,
           name: response.data.name,
           email: response.data.email,
+          phone: response.data.phone || "",
         }));
       } catch (err: any) {
         setError(err.response?.data?.message || "Failed to load settings");
@@ -65,6 +69,16 @@ export default function Settings() {
       return;
     }
 
+    if (user?.role === "creator" && !form.phone.trim()) {
+      setError("Phone number is required for creator accounts");
+      return;
+    }
+
+    if (form.phone && !/^[0-9]{10}$/.test(form.phone)) {
+      setError("Phone number must be exactly 10 digits");
+      return;
+    }
+
     if (form.password && form.password.length < 6) {
       setError("Password must be at least 6 characters");
       return;
@@ -80,10 +94,14 @@ export default function Settings() {
       setError("");
       setSuccess("");
 
-      const payload: { name: string; email: string; password?: string } = {
+      const payload: { name: string; email: string; phone?: string; password?: string } = {
         name: form.name.trim(),
         email: form.email.trim(),
       };
+
+      if (form.phone) {
+        payload.phone = form.phone.trim();
+      }
 
       if (form.password) {
         payload.password = form.password;
@@ -169,6 +187,28 @@ export default function Settings() {
                 required
               />
             </div>
+
+            {user?.role === "creator" && (
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">Phone Number</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={form.phone}
+                  onChange={(e) => {
+                    const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    setForm((prev) => ({ ...prev, phone: digitsOnly }));
+                    setError("");
+                  }}
+                  inputMode="numeric"
+                  placeholder="10-digit phone number"
+                  maxLength={10}
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100"
+                  required={user?.role === "creator"}
+                />
+                <p className="mt-1 text-xs text-slate-500">Only digits allowed, max 10 characters</p>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <div>

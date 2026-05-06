@@ -4,6 +4,7 @@ export interface AuthUser {
   _id: string;
   name: string;
   email: string;
+  phone?: string;
   role: "creator" | "user";
   token: string;
 }

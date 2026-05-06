@@ -9,7 +9,8 @@ interface TripForm {
   pickupLocation: string;
   description: string;
   budget: string;
-  date: string;
+  startDate: string;
+  endDate: string;
 }
 
 export default function AddTrip() {
@@ -20,26 +21,34 @@ export default function AddTrip() {
     pickupLocation: "",
     description: "",
     budget: "",
-    date: "",
+    startDate: "",
+    endDate: "",
   });
-  const [dateError, setDateError] = useState<string>("");
   const nav = useNavigate();
+  const [dateError, setDateError] = useState<string>("");
 
-  const validateDate = (date: string): boolean => {
-    if (!date) return true;
-    const monthYearPattern = /^[A-Z][a-z]+-\d{4}$/;
-    if (!monthYearPattern.test(date)) {
-      setDateError("Please use format: Month-Year (e.g., 'December-2024')");
+  const todayStr = new Date().toISOString().slice(0,10);
+
+  const validateDates = (start?: string, end?: string) => {
+    setDateError("");
+    if (!start) return false;
+    const s = new Date(start);
+    s.setHours(0,0,0,0);
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    if (s < today) {
+      setDateError("Start date must be today or in the future");
       return false;
     }
-    setDateError("");
+    if (end) {
+      const e = new Date(end);
+      e.setHours(0,0,0,0);
+      if (e < s) {
+        setDateError("End date must be same as or after start date");
+        return false;
+      }
+    }
     return true;
-  };
-
-  const handleDateChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setForm({ ...form, date: value });
-    validateDate(value);
   };
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
@@ -49,7 +58,7 @@ export default function AddTrip() {
       nav("/");
       return;
     }
-    if (!validateDate(form.date)) return;
+    if (!validateDates(form.startDate, form.endDate)) return;
     await API.post("/trips", form);
     nav("/");
   };
@@ -172,25 +181,28 @@ export default function AddTrip() {
                   <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  Trip Date *
+                  Trip Start Date *
                 </label>
                 <input
-                  placeholder="e.g., December-2025"
-                  value={form.date}
-                  onChange={handleDateChange}
-                  className={`w-full p-4 bg-white border rounded-2xl focus:outline-none focus:ring-2 focus:ring-sky-400 text-slate-900 placeholder-slate-400 transition-all duration-200 ${
-                    dateError ? "border-red-500" : "border-slate-300"
-                  }`}
+                  type="date"
+                  value={form.startDate}
+                  onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                  min={todayStr}
+                  className={`w-full p-4 bg-white border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-sky-400 text-slate-900 placeholder-slate-400 transition-all duration-200`}
                   required
                 />
-                {dateError && (
-                  <div className="flex items-center gap-2 text-red-600 text-sm mt-1">
-                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {dateError}
-                  </div>
-                )}
+                {dateError && <p className="text-sm text-red-600 mt-1">{dateError}</p>}
+              </div>
+              <div className="space-y-2">
+                <label className="flex text-sm font-semibold text-slate-700 items-center gap-2">Trip End Date *</label>
+                <input
+                  type="date"
+                  value={form.endDate}
+                  onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                  min={form.startDate || todayStr}
+                  className="w-full p-4 bg-white border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-sky-400 text-slate-900 placeholder-slate-400 transition-all duration-200"
+                  required
+                />
               </div>
             </div>
 

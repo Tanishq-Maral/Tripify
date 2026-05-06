@@ -43,6 +43,7 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [showProfileMenu, setShowProfileMenu] = useState<boolean>(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
 
   const loadTrips = async (currentFilters: Filters = { destination: "", pickupLocation: "", budget: "", month: "", year: "", sortBy: "createdAt", sortOrder: "desc" }, search: string = "") => {
     try {
@@ -65,6 +66,13 @@ export default function Home() {
     }
   }, [user, hasInitialLoad]);
 
+  // Reload trips when window gains focus (so dashboard updates after create/edit)
+  useEffect(() => {
+    const onFocus = () => loadTrips(filters, searchTerm);
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [filters, searchTerm]);
+
   useEffect(() => {
     if (user) {
       setShowLandingHeader(false);
@@ -82,6 +90,14 @@ export default function Home() {
       window.removeEventListener("scroll", onScroll);
     };
   }, [user]);
+
+  // Show scroll-to-top button after user scrolls down
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 400);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -117,6 +133,49 @@ export default function Home() {
 
   const toggleFilters = () => {
     setShowFilters(!showFilters);
+  };
+
+  const budgetLabels: Record<string, string> = {
+    "500": "Under \u20b9500",
+    "1000": "Under \u20b91,000",
+    "2000": "Under \u20b92,000",
+    "5000": "Under \u20b95,000",
+    "10000": "Under \u20b910,000",
+    "15000": "Under \u20b915,000",
+    "20000": "Under \u20b920,000",
+    "25000": "Under \u20b925,000",
+    "50000": "Under \u20b950,000",
+    "100000": "Under \u20b91,00,000",
+    "100001": "Above \u20b91,00,000",
+  };
+
+  const appliedFilters = () => {
+    const items: { key: string; label: string }[] = [];
+    if (filters.destination) items.push({ key: "destination", label: `Destination: ${filters.destination}` });
+    if (filters.pickupLocation) items.push({ key: "pickupLocation", label: `Pickup: ${filters.pickupLocation}` });
+    if (filters.budget) items.push({ key: "budget", label: `Budget: ${budgetLabels[filters.budget] || filters.budget}` });
+    if (filters.month) {
+      const monthLabel = filters.month.charAt(0).toUpperCase() + filters.month.slice(1);
+      items.push({ key: "month", label: `Month: ${monthLabel}` });
+    }
+    if (filters.year) items.push({ key: "year", label: `Year: ${filters.year}` });
+    if (filters.sortBy !== "createdAt" || filters.sortOrder !== "desc") {
+      const sortLabel = `${filters.sortBy} ${filters.sortOrder === "asc" ? "(Asc)" : "(Desc)"}`;
+      items.push({ key: "sort", label: `Sort: ${sortLabel}` });
+    }
+    return items;
+  };
+
+  const removeAppliedFilter = (key: string) => {
+    const nextFilters: Filters = { ...filters };
+    if (key === "sort") {
+      nextFilters.sortBy = "createdAt";
+      nextFilters.sortOrder = "desc";
+    } else {
+      nextFilters[key as keyof Filters] = "" as any;
+    }
+    setFilters(nextFilters);
+    loadTrips(nextFilters, searchTerm);
   };
 
   const hasActiveFilters =
@@ -180,7 +239,7 @@ export default function Home() {
               Welcome to <span className="text-blue-400">Tripifyyy</span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Connect with like-minded travelers and plan amazing trips together.
+              Connect with like-minded travellers and plan amazing trips together.
               Discover new destinations, share experiences, and create unforgettable memories.
             </p>
             <Link
@@ -195,6 +254,18 @@ export default function Home() {
           </div>
         </section>
 
+        {showScrollTop && (
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            aria-label="Scroll to top"
+            className="fixed bottom-6 right-6 z-50 rounded-full bg-sky-600 p-3 text-white shadow-lg hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-300"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+            </svg>
+          </button>
+        )}
+
         <section className="py-20 bg-gray-800">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
@@ -205,8 +276,8 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
-                { icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z", color: "bg-blue-500", title: "Discover Destinations", desc: "Browse through amazing trips created by travelers from around the world." },
-                { icon: "M15.5 3.354a2 2 0 110 7.292M12.4 3.754a4 4 0 11-5 0 4 4 0 015 0z M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197", color: "bg-green-500", title: "Join Communities", desc: "Connect with like-minded travelers and build your travel squad." },
+                { icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z", color: "bg-blue-500", title: "Discover Destinations", desc: "Browse through amazing trips created by travellers from around the world." },
+                { icon: "M15.5 3.354a2 2 0 110 7.292M12.4 3.754a4 4 0 11-5 0 4 4 0 015 0z M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197", color: "bg-green-500", title: "Join Communities", desc: "Connect with like-minded travellers and build your travel squad." },
                 { icon: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z", color: "bg-purple-500", title: "Real-time Chat", desc: "Plan together with instant messaging within your trip groups." },
               ].map((feature) => (
                 <div key={feature.title} className="bg-gray-700 rounded-2xl p-8 text-center hover:transform hover:-translate-y-2 transition-all duration-300 hover:shadow-2xl">
@@ -226,7 +297,7 @@ export default function Home() {
         <section className="relative py-20 bg-gradient-to-t from-gray-700 to-gray-700">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ready to Start Your Adventure?</h2>
-            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">Join thousands of travelers sharing their journeys</p>
+            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">Join thousands of travellers sharing their journeys</p>
             <Link
               to="/auth?mode=signup"
               className="inline-flex items-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-lg"
@@ -327,7 +398,7 @@ export default function Home() {
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#9b6907]">Community Travel Planner</p>
             <h2 className="mt-3 text-3xl font-bold md:text-5xl">Discover Your Next Adventure</h2>
             <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-900 md:text-base">
-              Explore trips created by travelers, filter by your preferences, and start planning memorable experiences together.
+              Explore trips created by travellers, filter by your preferences, and start planning memorable experiences together.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
               <Badge tone="info">Smart Search</Badge>
@@ -342,7 +413,7 @@ export default function Home() {
               <div className="relative w-full flex-1">
                 <input
                   type="text"
-                  placeholder="Search trips by destination, description..."
+                  placeholder="Search trips by destination, pickup, or description..."
                   value={searchTerm}
                   onChange={handleSearchChange}
                   className="w-full rounded-xl border border-sky-300 bg-white px-4 py-3 pr-10 text-slate-800 shadow-sm focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-300"
@@ -361,7 +432,7 @@ export default function Home() {
                   onClick={toggleFilters}
                   className="rounded-xl border border-sky-500 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-sky-100"
                 >
-                  Filters {hasActiveFilters ? "• Active" : ""}
+                  Filters
                 </button>
                 {isCreator ? (
                   <Link
@@ -373,6 +444,29 @@ export default function Home() {
                 ) : null}
               </div>
             </div>
+
+            {hasActiveFilters && (
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                {appliedFilters().map((item) => (
+                  <span
+                    key={item.key}
+                    className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700"
+                  >
+                    {item.label}
+                    <button
+                      type="button"
+                      onClick={() => removeAppliedFilter(item.key)}
+                      aria-label={`Remove ${item.label}`}
+                      className="grid h-5 w-5 place-items-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+                    >
+                      <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
 
             {showFilters ? (
               <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
@@ -402,6 +496,18 @@ export default function Home() {
               ))}
             </div>
           ) : null}
+
+        {showScrollTop && (
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            aria-label="Scroll to top"
+            className="fixed bottom-6 right-6 z-50 rounded-full bg-sky-600 p-3 text-white shadow-lg hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-300"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+            </svg>
+          </button>
+        )}
 
           {!loading && displayedTrips.length === 0 ? (
             <div className="rounded-3xl border border-white/80 bg-white/70 p-10 text-center shadow-sm">

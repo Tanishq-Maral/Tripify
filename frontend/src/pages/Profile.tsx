@@ -7,6 +7,7 @@ interface ProfileData {
   _id: string;
   name: string;
   email: string;
+  phone?: string;
   role: "creator" | "user";
 }
 
@@ -101,6 +102,12 @@ export default function Profile() {
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Email</p>
               <p className="mt-2 text-lg font-semibold text-slate-900">{profile?.email || user?.email || "-"}</p>
             </div>
+            {(profile?.role || user?.role) === "creator" && (
+              <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Phone</p>
+                <p className="mt-2 text-lg font-semibold text-slate-900">{profile?.phone || user?.phone || "Not provided"}</p>
+              </div>
+            )}
             <div className="rounded-2xl border border-slate-200 bg-white p-5 md:col-span-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Account Role</p>
               <span className="mt-3 inline-flex rounded-full border border-sky-300 bg-sky-50 px-3 py-1 text-sm font-semibold capitalize text-sky-800">

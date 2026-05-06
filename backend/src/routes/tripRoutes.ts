@@ -4,6 +4,7 @@ import {
   createTrip,
   getTripById,
   joinTrip,
+  reportTripCreator,
   getFilterOptions,
   getTripMessages,
   sendTripMessage,
@@ -19,6 +20,7 @@ router.get("/filters", getFilterOptions);
 router.get("/:id", getTripById);
 router.post("/", protect, createTrip);
 router.post("/:id/join", protect, joinTrip);
+router.post("/:id/report", protect, reportTripCreator);
 router.put("/:id", protect, updateTrip);
 router.delete("/:id/members/:memberId", protect, removeTripMember);
 

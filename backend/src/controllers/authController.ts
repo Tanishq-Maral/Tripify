@@ -8,24 +8,37 @@ const buildAuthResponse = (user: {
   _id: unknown;
   name: string;
   email: string;
+  phone?: string;
   role: UserRole;
 }) => ({
   _id: user._id,
   name: user.name,
   email: user.email,
+  phone: user.phone,
   role: user.role,
   token: generateToken(String(user._id)),
 });
 
 const signupWithRole = async (req: Request, res: Response, role: UserRole): Promise<void> => {
-  const { name, email, password } = req.body as {
+  const { name, email, password, phone } = req.body as {
     name: string;
     email: string;
     password: string;
+    phone?: string;
   };
 
   if (!name || !email || !password) {
     res.status(400).json({ message: "Name, email, and password are required" });
+    return;
+  }
+
+  if (role === "creator" && !phone) {
+    res.status(400).json({ message: "Phone number is required for creator accounts" });
+    return;
+  }
+
+  if (phone && !/^[0-9]{10}$/.test(phone)) {
+    res.status(400).json({ message: "Phone number must be exactly 10 digits" });
     return;
   }
 
@@ -39,7 +52,7 @@ const signupWithRole = async (req: Request, res: Response, role: UserRole): Prom
       return;
     }
 
-    const user = await User.create({ name, email: normalizedEmail, password, role });
+    const user = await User.create({ name, email: normalizedEmail, password, phone, role });
     res.status(201).json(buildAuthResponse(user));
   } catch (err) {
     res.status(500).json({ message: (err as Error).message });
@@ -123,6 +136,7 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
       _id: user._id,
       name: user.name,
       email: user.email,
+      phone: user.phone,
       role: user.role,
     });
   } catch (err) {
@@ -136,11 +150,17 @@ export const updateProfileSettings = async (req: Request, res: Response): Promis
     return;
   }
 
-  const { name, email, password } = req.body as {
+  const { name, email, password, phone } = req.body as {
     name?: string;
     email?: string;
     password?: string;
+    phone?: string;
   };
+
+  if (phone && !/^[0-9]{10}$/.test(phone)) {
+    res.status(400).json({ message: "Phone number must be exactly 10 digits" });
+    return;
+  }
 
   try {
     const user = await User.findById(req.user._id);
@@ -169,12 +189,17 @@ export const updateProfileSettings = async (req: Request, res: Response): Promis
       user.password = password;
     }
 
+    if (phone) {
+      user.phone = phone;
+    }
+
     await user.save();
 
     res.status(200).json({
       _id: user._id,
       name: user.name,
       email: user.email,
+      phone: user.phone,
       role: user.role,
       token: generateToken(String(user._id)),
     });
