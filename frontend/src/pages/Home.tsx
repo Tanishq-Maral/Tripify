@@ -223,7 +223,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="py-20 bg-gradient-to-t from-gray-700 to-gray-700">
+        <section className="relative py-20 bg-gradient-to-t from-gray-700 to-gray-700">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ready to Start Your Adventure?</h2>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">Join thousands of travelers sharing their journeys</p>
@@ -237,7 +237,11 @@ export default function Home() {
               </svg>
             </Link>
           </div>
+          
         </section>
+        <div>
+          <p className="absolute bottom-2 left-2 sm:left-2 lg:left-2 text-gray-400 text-xs">Made by Tanishq Maral</p>
+        </div>
 
         <footer className="bg-black py-4 border-t border-gray-800">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
