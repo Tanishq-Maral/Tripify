@@ -1,0 +1,947 @@
+# DW - 1
+import pandas as pd
+import numpy as np
+file_path = "Datasets/assignment_1_dirty_cafe_sales.csv"
+df = pd.read_csv(file_path)
+df.head()
+df.shape
+df.columns
+df.info()
+df.isnull().sum()
+miss = (df.isnull().sum() / len(df)) * 100
+print(miss)
+df.describe()
+df.dtypes
+df.head()
+df["Quantity"] = pd.to_numeric(df["Quantity"], errors="coerce")
+df["Price Per Unit"] = pd.to_numeric(df["Price Per Unit"], errors="coerce")
+df["Total Spent"] = pd.to_numeric(df["Total Spent"], errors="coerce")
+df["Transaction Date"] = pd.to_datetime(df["Transaction Date"], errors="coerce")
+df["Item"] = df["Item"].astype("category")
+df["Payment Method"] = df["Payment Method"].astype("category")
+df["Location"] = df["Location"].astype("category")
+df.dtypes
+df.describe()
+df.describe(include="category")
+drop_na = df.dropna()
+drop_na.shape
+df["Price Per Unit"] = df["Price Per Unit"].fillna(df["Price Per Unit"].mean(), inplace=True)
+df["Location"] = df["Location"].fillna(df["Location"].mode()[0], inplace=True)
+df.info()
+df.describe()
+encoded_df = pd.get_dummies(df, columns=["Payment Method"], drop_first=False, dtype=int)
+encoded_df.info()
+sz_obj = { "S" : 1, "M" : 2, "L" : 3}
+df["Size"] = df["Size"].map(sz_obj)
+
+# ==================================================================== 2
+# DW - 2
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+np.random.seed(42)
+num_students = 10
+data = {
+    "student_id": range(1, num_students + 1),
+    "name": [f"Student_{i}" for i in range(1, num_students + 1)],
+    "gender": np.random.choice(["Male", "Female"], num_students),
+    "class": np.random.choice(["FY", "SY", "TY"], num_students),
+    "math_score": np.random.randint(35, 100, num_students),
+    "science_score": np.random.randint(30, 100, num_students),
+    "english_score": np.random.randint(40, 100, num_students),
+    "attendance_percent": np.random.randint(60, 100, num_students),
+    "study_hours_per_week": np.random.randint(5, 20, num_students)
+}
+df = pd.DataFrame(data)
+file_name = "sample.csv"
+df.to_csv(file_name, index=False)
+df = pd.read_csv("sample.csv")
+df.info()
+df.isnull().sum()
+print(df["gender"].unique())
+print(df["attendance_percent"].max())
+df["gender"] = df["gender"].str.strip().str.lower()
+df["gender"] = df["gender"].replace({ "m" : "male", "malee" : "male"})
+print(df["gender"].unique())
+print(df["attendance_percent"].max())
+df["math_score"] = df["math_score"].fillna(df["math_score"].median())
+df["gender"] = df["gender"].fillna(df["gender"].mode()[0])
+df.info()
+# Outliers
+plt.figure(figsize=(10, 6))
+sns.boxplot(data=df["math_score"])
+plt.xticks(rotation=90)
+plt.title("Outliers")
+plt.show()
+def IQR_based_outlier(series) :
+    q1 = series.quantile(0.25)
+    q3 = series.quantile(0.75)
+    iqr = q3 - q1
+    lb = q1 - 1.5 * iqr
+    ub = q3 + 1.5 * iqr
+    return lb, ub
+df["attendance_percent"] = df["attendance_percent"].clip(0, 100)
+lb, ub = IQR_based_outlier(df["study_hours_per_week"])
+df["study_hours_per_week"] = df["study_hours_per_week"].clip(lb, ub)
+df.head(10)
+# Data Transformation
+print(df["study_hours_per_week"].skew())
+plt.figure(figsize=(10, 6))
+sns.histplot(data=df["study_hours_per_week"], kde=True)
+plt.title("Distribution")
+plt.show()
+df["study_hours_per_week"] = np.sqrt(df["study_hours_per_week"] + 1)
+print(df["study_hours_per_week"].skew())
+plt.figure(figsize=(10, 6))
+sns.histplot(data=df["study_hours_per_week"], kde=True)
+plt.title("Distribution")
+plt.show()
+
+# ==================================================================== 3
+# DESCRIPTIVE STATISTICS
+# Measures of Central Tendency and Variability
+# PART 1:
+# Summary Statistics using Social_Network_Ads.csv
+import pandas as pd
+import numpy as np
+# Load dataset
+df = pd.read_csv("Datasets/assignment_5_Social_Network_Ads.csv")
+# Display first 5 rows
+print("First 5 Rows of Dataset:\n")
+print(df.head())
+# Dataset information
+print("\nDataset Information:\n")
+print(df.info())
+# Grouping by Categorical Variable
+# Categorical Variable  : Gender
+# Numeric Variable      : EstimatedSalary
+group_stats = (
+    df.groupby('Gender')['EstimatedSalary']
+      .agg(['mean', 'median', 'min', 'max', 'std'])
+      .reset_index()
+)
+print("\nSummary Statistics of Estimated Salary grouped by Gender:\n")
+print(group_stats)
+# Complete Descriptive Statistics
+group_desc = df.groupby('Gender')['EstimatedSalary'].describe()
+print("\nComplete Descriptive Statistics:\n")
+print(group_desc)
+# Create List of Numeric Values for each Category
+salary_by_gender = {
+    gender: subdf['EstimatedSalary'].tolist()
+    for gender, subdf in df.groupby('Gender')
+}
+print("\nSalary List for each Gender:\n")
+print(salary_by_gender)
+# Separate lists
+gender_list = df['Gender'].tolist()
+salary_list = df['EstimatedSalary'].tolist()
+print("\nFirst 10 Gender Values:")
+print(gender_list[:10])
+print("\nFirst 10 Salary Values:")
+print(salary_list[:10])
+print("\nInterpretation:")
+print("The grouped statistics show the average salary, median salary,")
+print("minimum salary, maximum salary, and standard deviation for each gender.")
+print("Standard deviation indicates the spread of salary values.")
+print("Higher standard deviation means salaries are more spread out.")
+# PART 2:
+# Descriptive Statistics on Iris Dataset
+# Load iris dataset
+iris = pd.read_csv("Datasets/assignment_3_2nd_iris_dataset.csv")
+# Display first 5 rows
+print("\n\nFirst 5 Rows of Iris Dataset:\n")
+print(iris.head())
+# Dataset information
+print("\nIris Dataset Information:\n")
+print(iris.info())
+# Filter Dataset by Species
+setosa = iris[iris['Species'] == 'Iris-setosa']
+versicolor = iris[iris['Species'] == 'Iris-versicolor']
+virginica = iris[iris['Species'] == 'Iris-virginica']
+print("\nNumber of Records:")
+print("Setosa:", len(setosa))
+print("Versicolor:", len(versicolor))
+print("Virginica:", len(virginica))
+# Numeric columns
+num_cols = [
+    'SepalLengthCm',
+    'SepalWidthCm',
+    'PetalLengthCm',
+    'PetalWidthCm'
+]
+# Statistical Details for Each Species
+species_data = {
+    'Iris-setosa': setosa,
+    'Iris-versicolor': versicolor,
+    'Iris-virginica': virginica
+}
+for species, data in species_data.items():
+    print("Species:", species)
+    # Basic descriptive statistics
+    print("\nDescriptive Statistics:\n")
+    print(data[num_cols].describe())
+    # Mean
+    print("\nMean:\n")
+    print(data[num_cols].mean())
+    # Median
+    print("\nMedian:\n")
+    print(data[num_cols].median())
+    # Standard Deviation
+    print("\nStandard Deviation:\n")
+    print(data[num_cols].std())
+    # Minimum Values
+    print("\nMinimum Values:\n")
+    print(data[num_cols].min())
+    # Maximum Values
+    print("\nMaximum Values:\n")
+    print(data[num_cols].max())
+    # Percentiles
+    print("\n25th Percentile:\n")
+    print(data[num_cols].quantile(0.25))
+    print("\n50th Percentile (Median):\n")
+    print(data[num_cols].quantile(0.50))
+    print("\n75th Percentile:\n")
+    print(data[num_cols].quantile(0.75))
+print("\n\nInterpretation:")
+print("Iris-setosa generally has smaller petal length and width")
+print("compared to the other species.")
+print("Iris-virginica has larger petal measurements and greater spread.")
+print("Percentiles help understand the distribution of values.")
+print("Standard deviation shows variability in measurements.")
+
+# ==================================================================== 4
+# DA - 1 : Boston Housing Price Prediction
+# Linear Regression using Python
+import pandas as pd
+import numpy as np
+#pip install scikit-learn
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+column_names = [
+    'crim', 'zn', 'indus', 'chas', 'nox',
+    'rm', 'age', 'dis', 'rad', 'tax',
+    'ptratio', 'b', 'lstat', 'medv'
+]
+data = pd.read_csv("Datasets/assignment_4_BostonHousing.csv")
+#data = data.dropna()
+data = data.fillna(data.mean(numeric_only=True))
+# Display first 5 rows
+print("\nFirst 5 Rows:\n")
+print(data.head())
+# Dataset shape
+print("\nDataset Shape:")
+print(data.shape)
+# Dataset information
+print("\nDataset Info:\n")
+print(data.info())
+# Step 3: Exploratory Data Analysis
+# Check missing values
+print("\nMissing Values:\n")
+print(data.isnull().sum())
+# Summary statistics
+print("\nSummary Statistics:\n")
+print(data.describe())
+# Correlation matrix
+print("\nCorrelation with MEDV:\n")
+corr_matrix = data.corr(numeric_only=True)
+print(corr_matrix['medv'].sort_values(ascending=False))
+# Step 4: Define Features and Target
+# Target variable
+y = data['medv']
+# Feature variables
+X = data.drop(columns=['medv'])
+# Step 5: Split Dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
+print("\nTraining Data Shape:")
+print(X_train.shape)
+print("\nTesting Data Shape:")
+print(X_test.shape)
+# Step 6: Train Linear Regression Model
+# Create model
+model = LinearRegression()
+# Train model
+model.fit(X_train, y_train)
+# Step 7: Model Coefficients
+print("\nIntercept (beta_0):")
+print(model.intercept_)
+print("\nCoefficients (beta_i):")
+for feature, coef in zip(X.columns, model.coef_):
+    print(f"{feature}: {coef}")
+# Step 8: Predictions
+# Predict test data
+y_pred = model.predict(X_test)
+# Compare actual vs predicted
+comparison = pd.DataFrame({
+    'Actual_MEDV': y_test.values,
+    'Predicted_MEDV': np.round(y_pred, 2)
+})
+print("\nActual vs Predicted Values:\n")
+print(comparison.head(10))
+# Step 9: Evaluate Model
+mse = mean_squared_error(y_test, y_pred)
+rmse = np.sqrt(mse)
+r2 = r2_score(y_test, y_pred)
+print("\nModel Evaluation:\n")
+print("Mean Squared Error (MSE):", mse)
+print("Root Mean Squared Error (RMSE):", rmse)
+print("R-squared (R2 Score):", r2)
+# Step 10: Predict Custom Input (Optional)
+# Example custom input Uncomment to use
+"""
+custom_data = [[
+    0.1,    # crim
+    18.0,   # zn
+    2.31,   # indus
+    0,      # chas
+    0.538,  # nox
+    6.575,  # rm
+    65.2,   # age
+    4.09,   # dis
+    1,      # rad
+    296,    # tax
+    15.3,   # ptratio
+    396.9,  # b
+    4.98    # lstat
+]]
+predicted_price = model.predict(custom_data)
+print("\nPredicted House Price:")
+print(predicted_price[0])
+"""
+
+# ==================================================================== 5
+# DA - 2 : Logistic Regression on Social Network Ads
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix
+# Step 2: Load Dataset
+# Load dataset
+df = pd.read_csv("Datasets/assignment_5_Social_Network_Ads.csv")
+# Display first 5 rows
+print("\nFirst 5 Rows:\n")
+print(df.head())
+# Dataset information
+print("\nDataset Info:\n")
+print(df.info())
+# Summary statistics
+print("\nSummary Statistics:\n")
+print(df.describe())
+# Step 3: Select Features and Target
+# Features: Age and EstimatedSalary
+X = df[['Age', 'EstimatedSalary']].values
+# Target variable
+y = df['Purchased'].values
+# Step 4: Split Dataset
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.25,
+    random_state=0
+)
+print("\nTraining Data Shape:")
+print(X_train.shape)
+print("\nTesting Data Shape:")
+print(X_test.shape)
+# Step 5: Feature Scaling
+sc = StandardScaler()
+X_train_scaled = sc.fit_transform(X_train)
+X_test_scaled = sc.transform(X_test)
+# Step 6: Train Logistic Regression Model
+# Create model
+log_reg = LogisticRegression(random_state=0)
+# Train model
+log_reg.fit(X_train_scaled, y_train)
+# Model parameters
+print("\nIntercept:")
+print(log_reg.intercept_)
+print("\nCoefficients:")
+print(log_reg.coef_)
+# Step 7: Predictions
+# Predict class labels
+y_pred = log_reg.predict(X_test_scaled)
+# Predict probabilities
+y_prob = log_reg.predict_proba(X_test_scaled)[:, 1]
+print("\nFirst 10 Actual Values:")
+print(y_test[:10])
+print("\nFirst 10 Predicted Values:")
+print(y_pred[:10])
+print("\nFirst 10 Predicted Probabilities:")
+print(np.round(y_prob[:10], 3))
+# Step 8: Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+print("\nConfusion Matrix:\n")
+print(cm)
+# Extract TN, FP, FN, TP
+TN, FP, FN, TP = cm.ravel()
+print("\nTrue Positives (TP):", TP)
+print("False Positives (FP):", FP)
+print("True Negatives (TN):", TN)
+print("False Negatives (FN):", FN)
+# Step 9: Evaluation Metrics
+total = TP + TN + FP + FN
+accuracy = (TP + TN) / total
+error_rate = (FP + FN) / total
+precision = TP / (TP + FP) if (TP + FP) != 0 else 0
+recall = TP / (TP + FN) if (TP + FN) != 0 else 0
+print("\nEvaluation Metrics:\n")
+print("Accuracy:", round(accuracy, 3))
+print("Error Rate:", round(error_rate, 3))
+print("Precision:", round(precision, 3))
+print("Recall:", round(recall, 3))
+
+# ==================================================================== 6
+# DA - 3 : # Naive Bayes Classification on Iris Dataset
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import (
+    confusion_matrix,
+    accuracy_score,
+    classification_report
+)
+# Step 2: Load Dataset
+# Make sure iris.csv is in the same folder as this Python file
+iris = pd.read_csv("Datasets/assignment_6_iris_dataset.csv")
+# Display first 5 rows
+print("First 5 Rows:\n")
+print(iris.head())
+# Dataset information
+print("\nDataset Info:\n")
+print(iris.info())
+# Count of each species
+print("\nClass Distribution:\n")
+print(iris['Species'].value_counts())
+# Step 3: Prepare Features and Target
+# Feature matrix (X)
+X = iris[['SepalLengthCm',
+          'SepalWidthCm',
+          'PetalLengthCm',
+          'PetalWidthCm']].values
+# Target vector (y)
+y = iris['Species'].values
+# Step 4: Split Dataset into Train and Test
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.3,
+    random_state=0,
+    stratify=y
+)
+print("\nTraining Data Shape:", X_train.shape)
+print("Testing Data Shape:", X_test.shape)
+# Step 5: Create and Train Gaussian Naive Bayes Model
+gnb = GaussianNB()
+# Train the model
+gnb.fit(X_train, y_train)
+# Step 6: Predict on Test Data
+y_pred = gnb.predict(X_test)
+print("\nFirst 10 Actual Labels:")
+print(y_test[:10])
+print("\nFirst 10 Predicted Labels:")
+print(y_pred[:10])
+# Step 7: Confusion Matrix
+labels = ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica']
+cm = confusion_matrix(y_test, y_pred, labels=labels)
+print("\nConfusion Matrix:")
+print(cm)
+# Step 8: Accuracy
+accuracy = accuracy_score(y_test, y_pred)
+print("\nOverall Accuracy:", round(accuracy, 3))
+# Step 9: Classification Report
+print("\nClassification Report:\n")
+print(classification_report(y_test, y_pred))
+# Step 10: Calculate TP, FP, TN, FN and Metrics for Each Class
+print("\n--- Metrics for Each Class ---\n")
+for i in range(len(labels)):
+    TP = cm[i, i]
+    FP = cm[:, i].sum() - TP
+    FN = cm[i, :].sum() - TP
+    TN = cm.sum() - (TP + FP + FN)
+    total = TP + FP + FN + TN
+    accuracy_class = (TP + TN) / total
+    error_rate = (FP + FN) / total
+    precision = TP / (TP + FP) if (TP + FP) != 0 else 0
+    recall = TP / (TP + FN) if (TP + FN) != 0 else 0
+    print("Class:", labels[i])
+    print("TP =", TP)
+    print("FP =", FP)
+    print("FN =", FN)
+    print("TN =", TN)
+    print("Accuracy   =", round(accuracy_class, 3))
+    print("Error Rate =", round(error_rate, 3))
+    print("Precision  =", round(precision, 3))
+    print("Recall     =", round(recall, 3))
+
+# ==================================================================== 7
+# Text Analytics Practical
+# Part 1: Text Preprocessing
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk import pos_tag
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+from nltk.corpus import wordnet
+# Download required NLTK resources (Run Once)
+nltk.download('punkt')
+nltk.download('punkt_tab')   # Required for newer NLTK versions
+nltk.download('averaged_perceptron_tagger')
+nltk.download('averaged_perceptron_tagger_eng')  # For newer versions
+nltk.download('stopwords')
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+# 1. Sample Text
+text = """
+Text analytics is the process of turning unstructured text into meaningful data.
+It includes steps like tokenization, stopword removal, stemming, and lemmatization.
+"""
+print("Original Text")
+print(text)
+# 2. Tokenization
+tokens = word_tokenize(text)
+print("Tokens")
+print(tokens)
+# 3. POS Tagging
+pos_tags = pos_tag(tokens)
+print("POS Tags")
+print(pos_tags)
+# 4. Stop-word Removal
+stop_words = set(stopwords.words('english'))
+tokens_no_sw = [
+    word for word in tokens
+    if word.lower() not in stop_words and word.isalpha()
+]
+print("Tokens after Stop-word Removal")
+print(tokens_no_sw)
+# 5. Stemming
+stemmer = PorterStemmer()
+stemmed_words = [stemmer.stem(word) for word in tokens_no_sw]
+print("Stemmed Words")
+print(stemmed_words)
+# 6. Lemmatization
+# Function to convert POS tags
+def get_wordnet_pos(treebank_tag):
+    if treebank_tag.startswith('J'):
+        return wordnet.ADJ
+    elif treebank_tag.startswith('V'):
+        return wordnet.VERB
+    elif treebank_tag.startswith('N'):
+        return wordnet.NOUN
+    elif treebank_tag.startswith('R'):
+        return wordnet.ADV
+    else:
+        return wordnet.NOUN
+lemmatizer = WordNetLemmatizer()
+# POS tagging after stop-word removal
+filtered_pos_tags = pos_tag(tokens_no_sw)
+lemmatized_words = []
+for word, tag in filtered_pos_tags:
+    wn_tag = get_wordnet_pos(tag)
+    lemma = lemmatizer.lemmatize(word.lower(), pos=wn_tag)
+    lemmatized_words.append(lemma)
+print("Lemmatized Words")
+print(lemmatized_words)
+# Part 2: TF-IDF Representation
+from sklearn.feature_extraction.text import TfidfVectorizer
+# Sample Corpus
+corpus = [
+    "Text analytics converts text into useful information.",
+    "We apply tokenization, stopword removal, and lemmatization on documents.",
+    "TF IDF gives higher weight to important words in a document."
+]
+print("Corpus")
+for i, doc in enumerate(corpus, start=1):
+    print(f"\nDocument {i}:")
+    print(doc)
+# Create TF-IDF Vectorizer
+vectorizer = TfidfVectorizer()
+# Fit and Transform
+tfidf_matrix = vectorizer.fit_transform(corpus)
+# Vocabulary Terms
+terms = vectorizer.get_feature_names_out()
+print("Vocabulary Terms")
+print(terms)
+# TF-IDF Matrix
+print("TF-IDF Matrix")
+print(tfidf_matrix.toarray())
+# Non-zero TF-IDF Values for Document 1
+doc1 = tfidf_matrix[0].toarray().flatten()
+print("Non-zero TF-IDF values for Document 1")
+for term, value in zip(terms, doc1):
+    if value > 0:
+        print(f"{term:15s} -> {value:.3f}")
+
+# ==================================================================== 8
+# DV - 1
+# Titanic Dataset Analysis using Seaborn
+# Import required libraries
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+# 1. Load Dataset
+# If using your CSV file from folder
+titanic = pd.read_csv("Datasets/assignment_8_titanic_dataset.csv")
+# Display first 10 rows
+print("First 10 Rows:\n")
+print(titanic.head(10))
+# Shape of dataset
+print("\nShape of Dataset:")
+print(titanic.shape)
+# Information about dataset
+print("\nDataset Information:")
+print(titanic.info())
+# 2. Survival Rate by Passenger Class
+plt.figure(figsize=(6,4))
+ax = sns.barplot(
+    data=titanic,
+    x="Pclass",
+    y="Survived"
+)
+plt.title("Survival Rate by Passenger Class")
+plt.xlabel("Passenger Class")
+plt.ylabel("Proportion Survived")
+# Add labels on bars
+ax.bar_label(ax.containers[0], fmt='%.2f')
+plt.show()
+# Groupby operation
+survival_by_class = titanic.groupby('Pclass')['Survived'].mean() * 100
+print("\nSurvival Percentage by Class:")
+print(survival_by_class)
+# 3. Passenger Count by Gender and Survival
+plt.figure(figsize=(6,4))
+ax = sns.countplot(
+    data=titanic,
+    x="Sex",
+    hue="Survived"
+)
+plt.title("Passenger Count by Gender and Survival")
+plt.xlabel("Gender")
+plt.ylabel("Count")
+plt.legend(title="Survived", labels=["No", "Yes"])
+# Add labels to bars
+ax.bar_label(ax.containers[0], label_type='edge')
+ax.bar_label(ax.containers[1], label_type='edge')
+plt.show()
+# 4. Fare Distribution by Passenger Class
+plt.figure(figsize=(6,4))
+sns.boxplot(
+    data=titanic,
+    x="Pclass",
+    y="Fare"
+)
+plt.title("Fare Distribution by Passenger Class")
+plt.xlabel("Passenger Class")
+plt.ylabel("Fare")
+plt.show()
+# 5. Histogram of Fare
+# Check missing values
+print("\nMissing Fare Values:")
+print(titanic['Fare'].isna().sum())
+# Remove missing values
+fare_values = titanic['Fare'].dropna()
+# Histogram using Seaborn
+plt.figure(figsize=(8,5))
+sns.histplot(
+    fare_values,
+    bins=30,
+    kde=True
+)
+plt.title("Distribution of Ticket Fare (Titanic)")
+plt.xlabel("Fare")
+plt.ylabel("Number of Passengers")
+plt.show()
+# 6. Histogram using Matplotlib
+plt.figure(figsize=(8,5))
+plt.hist(
+    fare_values,
+    bins=30,
+    edgecolor="black"
+)
+plt.title("Distribution of Ticket Fare (Titanic)")
+plt.xlabel("Fare")
+plt.ylabel("Number of Passengers")
+plt.show()
+
+# ==================================================================== 9
+# DV - 2 - Titanic Box Plot
+# Import Libraries
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+# Step 1: Load Dataset from CSV File
+# Replace filename with your actual CSV filename
+titanic = pd.read_csv("Datasets/assignment_9_titanic_dataset.csv")
+# Step 2: Display Dataset Information
+print("Dataset Shape")
+print(titanic.shape)
+print("First 5 Rows")
+print(titanic[['Sex', 'Age', 'Survived']].head())
+print("Missing Values in Age Column")
+print(titanic['Age'].isnull().sum())
+# Step 3: Remove Missing Age Values
+titanic_age = titanic.dropna(subset=["Age"])
+print("Shape after Removing Missing Ages")
+print(titanic_age.shape)
+# Step 4: Create Box Plot
+plt.figure(figsize=(8, 5))
+sns.boxplot(
+    data=titanic_age,
+    x="Sex",          # Male / Female
+    y="Age",          # Age Distribution
+    hue="Survived"    # 0 = No, 1 = Yes
+)
+# Step 5: Customize Plot
+plt.title(
+    "Age Distribution by Gender and Survival Status (Titanic)",
+    fontsize=14
+)
+plt.xlabel("Gender", fontsize=12)
+plt.ylabel("Age", fontsize=12)
+# Custom Legend
+handles, labels = plt.gca().get_legend_handles_labels()
+plt.legend(
+    handles,
+    ["No (0)", "Yes (1)"],
+    title="Survived"
+)
+plt.tight_layout()
+# Step 6: Show Plot
+plt.show()
+
+# ==================================================================== 10
+# DV - 3
+# Iris Dataset Analysis
+# Import required libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+# Step 1: Load Dataset
+# Load dataset from CSV file
+iris_df = pd.read_csv("Datasets/assignment_10_iris_dataset.csv")
+# Display first 5 rows
+print("First 5 Rows:\n")
+print(iris_df.head())
+# Shape of dataset
+print("\nShape of Dataset:")
+print(iris_df.shape)
+# Step 2: Features and Data Types
+print("\nFeatures and their Data Types:\n")
+print(iris_df.dtypes)
+# Dataset information
+print("\nDataset Info:\n")
+print(iris_df.info())
+# Check missing values
+print("\nMissing Values:\n")
+print(iris_df.isnull().sum())
+# Step 3: Histograms for all Features
+# Feature list
+features = [
+    'SepalLengthCm',
+    'SepalWidthCm',
+    'PetalLengthCm',
+    'PetalWidthCm'
+]
+# Create 2x2 subplot for histograms
+fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+axes = axes.ravel()
+# Plot histograms
+for i, feature in enumerate(features):
+    sns.histplot(
+        data=iris_df[feature],
+        kde=True,
+        ax=axes[i]
+    )
+    axes[i].set_title(f'Histogram of {feature}')
+    axes[i].set_xlabel(feature)
+    axes[i].set_ylabel('Frequency')
+plt.tight_layout()
+plt.show()
+# Step 4: Boxplots for all Features
+# Create 2x2 subplot for boxplots
+fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+axes = axes.ravel()
+# Plot boxplots
+for i, feature in enumerate(features):
+    sns.boxplot(
+        y=iris_df[feature],
+        ax=axes[i]
+    )
+    axes[i].set_title(f'Boxplot of {feature}')
+    axes[i].set_ylabel(feature)
+plt.tight_layout()
+plt.show()
+# Step 5: Pairplot (Optional)
+sns.pairplot(iris_df, hue='Species')
+plt.show()
+
+# ==================================================================== 11
+# Hadoop
+java -version
+hadoop version
+jps
+Expected services:
+NameNode
+DataNode
+ResourceManager
+NodeManager
+If NameNode is missing:
+hdfs namenode -format
+Start Hadoop Services
+start-dfs.sh
+start-yarn.sh
+jps
+Step 1: Create Working Directory
+mkdir LogAnalysis
+cd LogAnalysis
+Step 2: Create Input Log File
+nano log.txt
+Add the following data:
+INFO Login success
+ERROR Database failed
+INFO File uploaded
+ERROR Timeout
+WARN Disk low
+Save file:
+CTRL + O → Enter
+CTRL + X
+Verify file:
+cat log.txt
+Step 3: Create Mapper Class
+File: Mapper1.java
+import java.io.IOException;
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapreduce.Mapper;
+public class Mapper1 extends Mapper<Object, Text, Text, IntWritable> {
+    public void map(Object key, Text value, Context context)
+            throws IOException, InterruptedException {
+        String line = value.toString();
+        if (line.contains("ERROR"))
+            context.write(new Text("ERROR"), new IntWritable(1));
+        else if (line.contains("INFO"))
+            context.write(new Text("INFO"), new IntWritable(1));
+        else if (line.contains("WARN"))
+            context.write(new Text("WARN"), new IntWritable(1));
+    }
+}
+Step 4: Create Reducer Class
+File: Reducer1.java
+import java.io.IOException;
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapreduce.Reducer;
+public class Reducer1 extends Reducer<Text, IntWritable, Text, IntWritable> {
+    public void reduce(Text key, Iterable<IntWritable> values, Context context)
+            throws IOException, InterruptedException {
+        int sum = 0;
+        for (IntWritable v : values) {
+            sum += v.get();
+        }
+        context.write(key, new IntWritable(sum));
+    }
+}
+Step 5: Create Driver Class
+File: Driver.java
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+public class Driver {
+    public static void main(String[] args) throws Exception {
+        Job job = Job.getInstance(new Configuration(), "Log Count");
+        job.setJarByClass(Driver.class);
+        job.setMapperClass(Mapper1.class);
+        job.setReducerClass(Reducer1.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+        FileInputFormat.addInputPath(job, new Path("/input"));
+        FileOutputFormat.setOutputPath(job, new Path("/output"));
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+}
+Step 6: Compile Program
+javac -classpath `hadoop classpath` -d . Mapper1.java Reducer1.java Driver.java
+Step 7: Create JAR File
+jar -cvf log.jar *.class
+Step 8: Upload File to HDFS
+Create input directory:
+hdfs dfs -mkdir /input
+Upload log file:
+hdfs dfs -put log.txt /input
+Verify upload:
+hdfs dfs -ls /input
+Step 9: Run Hadoop Program
+hadoop jar log.jar Driver
+Step 10: View Output
+hdfs dfs -cat /output/part-r-00000
+Expected Output
+ERROR  2
+INFO   2
+WARN   1
+
+# ==================================================================== 12
+# Scala
+Prerequisites
+Check Java:
+java -version
+Check Scala:
+scala -version
+Check Spark:
+spark-shell
+If Spark shell starts successfully, the setup is ready.
+Step 1: Open Working Directory
+cd ~/Downloads
+Step 2: Create Input File
+Create input file:
+nano input.txt
+Enter the following data:
+Spark is fast
+Spark is fun
+Scala is powerful
+Save the file:
+Press CTRL + O → Enter
+Press CTRL + X
+Verify file contents:
+cat input.txt
+Step 3: Create Scala Program File
+nano WordCount.scala
+Step 4: Write Scala Spark Code
+// Read input file
+val data = sc.textFile("input.txt")
+// Split lines into words
+val words = data.flatMap(line => line.split(" "))
+// Create (word,1) pairs
+val pairs = words.map(word => (word, 1))
+// Count words
+val counts = pairs.reduceByKey(_ + _)
+// Print output
+counts.collect().foreach{ case (word, count) =>
+    println(s"$word -> $count")
+}
+Save the file:
+Press CTRL + O → Enter
+Press CTRL + X
+Verify code:
+cat WordCount.scala
+Step 5: Execute Program
+Start Spark Shell
+spark-shell
+Load Scala Program
+:load WordCount.scala
+Output
+Spark -> 2
+is -> 3
+fast -> 1
+fun -> 1
+Scala -> 1
+powerful -> 1

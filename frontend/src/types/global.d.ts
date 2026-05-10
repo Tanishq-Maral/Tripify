@@ -26,3 +26,13 @@ declare module "*.webp" {
   const src: string;
   export default src;
 }
+
+// Allow importing text/pdf files as URLs
+declare module "*.txt" {
+  const src: string;
+  export default src;
+}
+declare module "*.pdf" {
+  const src: string;
+  export default src;
+}

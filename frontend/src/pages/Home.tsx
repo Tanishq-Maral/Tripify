@@ -5,6 +5,7 @@ import TripCard, { Trip } from "../components/TripCard";
 import TripFilters, { Filters } from "../components/TripFilters";
 import { Link, useNavigate } from "react-router-dom";
 import backgroundImage from "../assets/background.jpg";
+import trailFile from "../assets/trail.txt";
 
 function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: "neutral" | "success" | "warning" | "info" }) {
   const toneClass = {
@@ -317,6 +318,15 @@ export default function Home() {
         <footer className="bg-black py-4 border-t border-gray-800">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <p className="text-gray-400 text-sm">&copy; 2024 Tripifyyy. All rights reserved. Connect, Explore, Remember.</p>
+            <div className="mt-2">
+              <a
+                href={trailFile}
+                download
+                className="text-xs text-sky-400 hover:text-sky-300 underline"
+              >
+                Download Trail PDF
+              </a>
+            </div>
           </div>
         </footer>
       </div>
