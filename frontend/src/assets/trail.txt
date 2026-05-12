@@ -746,267 +746,148 @@ print(output_vector)
 #----------------------------------------------------------------------------- 11
 # ANN Assignment 11
 # Neural Network and Logistic Regression using TensorFlow
-
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 
-from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.layers import Dense, Flatten
-from tensorflow.keras.datasets import mnist
-from tensorflow.keras.utils import to_categorical
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense, Input, Flatten
 
-from sklearn.metrics import classification_report, confusion_matrix
-
-# --------------------------------------------------
-# Step 1: Load MNIST Dataset
-# --------------------------------------------------
-
-(X_train, y_train), (X_test, y_test) = mnist.load_data()
-
-# --------------------------------------------------
-# Step 2: Normalize Data
-# --------------------------------------------------
-
-X_train = X_train / 255.0
-X_test = X_test / 255.0
-
-# --------------------------------------------------
-# Step 3: Convert Labels to Categorical Format
-# --------------------------------------------------
-
-y_train_cat = to_categorical(y_train, 10)
-y_test_cat = to_categorical(y_test, 10)
-
-# ==================================================
-# PART A : Neural Network using TensorFlow
-# ==================================================
-
-print("\n========== Neural Network ==========\n")
-
-# --------------------------------------------------
-# Step 4: Create Neural Network Model
-# --------------------------------------------------
-
-nn_model = Sequential([
-    Flatten(input_shape=(28, 28)),
-    Dense(128, activation='relu'),
-    Dense(10, activation='softmax')
-])
-
-# --------------------------------------------------
-# Step 5: Compile Model
-# --------------------------------------------------
-
-nn_model.compile(
-    optimizer='adam',
-    loss='categorical_crossentropy',
-    metrics=['accuracy']
+from sklearn.metrics import (
+    confusion_matrix,
+    classification_report,
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score
 )
 
 # --------------------------------------------------
-# Step 6: Train Model
+# Load MNIST Dataset
 # --------------------------------------------------
 
-history_nn = nn_model.fit(
-    X_train,
-    y_train_cat,
+(xtrain, ytrain), (xtest, ytest) = tf.keras.datasets.mnist.load_data()
+
+# Normalize Data
+xtrain = xtrain / 255.0
+xtest = xtest / 255.0
+
+# --------------------------------------------------
+# Create Logistic Regression Model
+# --------------------------------------------------
+
+model = Sequential([
+    Input(shape=(28, 28)),
+    Flatten(),
+    Dense(10, activation="softmax")
+])
+
+# --------------------------------------------------
+# Compile Model
+# --------------------------------------------------
+
+model.compile(
+    optimizer="adam",
+    loss="sparse_categorical_crossentropy",
+    metrics=["accuracy"]
+)
+
+# --------------------------------------------------
+# Train Model
+# --------------------------------------------------
+
+history = model.fit(
+    xtrain,
+    ytrain,
     epochs=5,
-    batch_size=32,
     validation_split=0.2
 )
 
 # --------------------------------------------------
-# Step 7: Save Model
+# Evaluate Model
 # --------------------------------------------------
 
-nn_model.save("tensorflow_neural_network_model_11_A.h5")
+loss, acc = model.evaluate(xtest, ytest)
 
-print("\nNeural Network Model Saved Successfully!")
-
-# --------------------------------------------------
-# Step 8: Load Saved Model
-# --------------------------------------------------
-
-saved_nn_model = load_model("tensorflow_neural_network_model_11_A.h5")
-
-print("Saved Neural Network Model Loaded Successfully!")
+print("\nTest Accuracy =", acc)
 
 # --------------------------------------------------
-# Step 9: Evaluate Model
+# Save Model
 # --------------------------------------------------
 
-loss, accuracy = saved_nn_model.evaluate(X_test, y_test_cat)
+model.save("logistic_regression_model.h5")
 
-print("\nNeural Network Accuracy:", accuracy)
+print("\nModel Saved Successfully!")
 
 # --------------------------------------------------
-# Step 10: Predictions
+# Predictions
 # --------------------------------------------------
 
-predictions = saved_nn_model.predict(X_test)
+predictions = model.predict(xtest)
 
 predicted_classes = np.argmax(predictions, axis=1)
 
 # --------------------------------------------------
-# Step 11: Confusion Matrix
+# Evaluation Metrics
+# --------------------------------------------------
+
+print("\nAccuracy Score:")
+print(accuracy_score(ytest, predicted_classes))
+
+print("\nPrecision Score:")
+print(precision_score(ytest, predicted_classes, average='weighted'))
+
+print("\nRecall Score:")
+print(recall_score(ytest, predicted_classes, average='weighted'))
+
+print("\nF1 Score:")
+print(f1_score(ytest, predicted_classes, average='weighted'))
+
+# --------------------------------------------------
+# Confusion Matrix
 # --------------------------------------------------
 
 print("\nConfusion Matrix:\n")
 
-print(confusion_matrix(y_test, predicted_classes))
+print(confusion_matrix(ytest, predicted_classes))
 
 # --------------------------------------------------
-# Step 12: Classification Report
-# --------------------------------------------------
-
-print("\nClassification Report:\n")
-
-print(classification_report(y_test, predicted_classes))
-
-# --------------------------------------------------
-# Step 13: Plot Accuracy Graph
-# --------------------------------------------------
-
-plt.plot(history_nn.history['accuracy'])
-plt.plot(history_nn.history['val_accuracy'])
-
-plt.title('Neural Network Accuracy')
-
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-
-plt.legend(['Train', 'Validation'])
-
-plt.show()
-
-# --------------------------------------------------
-# Step 14: Test One Sample
-# --------------------------------------------------
-
-sample = X_test[0]
-
-prediction = saved_nn_model.predict(sample.reshape(1, 28, 28))
-
-predicted_label = np.argmax(prediction)
-
-plt.imshow(sample, cmap='gray')
-
-plt.title(f"Predicted Digit: {predicted_label}")
-
-plt.show()
-
-# ==================================================
-# PART B : Logistic Regression using TensorFlow
-# ==================================================
-
-print("\n========== Logistic Regression ==========\n")
-
-# --------------------------------------------------
-# Step 15: Create Logistic Regression Model
-# --------------------------------------------------
-
-lr_model = Sequential([
-    Flatten(input_shape=(28, 28)),
-    Dense(10, activation='softmax')
-])
-
-# --------------------------------------------------
-# Step 16: Compile Model
-# --------------------------------------------------
-
-lr_model.compile(
-    optimizer='sgd',
-    loss='categorical_crossentropy',
-    metrics=['accuracy']
-)
-
-# --------------------------------------------------
-# Step 17: Train Model
-# --------------------------------------------------
-
-history_lr = lr_model.fit(
-    X_train,
-    y_train_cat,
-    epochs=5,
-    batch_size=32,
-    validation_split=0.2
-)
-
-# --------------------------------------------------
-# Step 18: Save Model
-# --------------------------------------------------
-
-lr_model.save("tensorflow_logistic_regression_model_11_B.h5")
-
-print("\nLogistic Regression Model Saved Successfully!")
-
-# --------------------------------------------------
-# Step 19: Load Saved Model
-# --------------------------------------------------
-
-saved_lr_model = load_model("tensorflow_logistic_regression_model_11_B.h5")
-
-print("Saved Logistic Regression Model Loaded Successfully!")
-
-# --------------------------------------------------
-# Step 20: Evaluate Model
-# --------------------------------------------------
-
-loss, accuracy = saved_lr_model.evaluate(X_test, y_test_cat)
-
-print("\nLogistic Regression Accuracy:", accuracy)
-
-# --------------------------------------------------
-# Step 21: Predictions
-# --------------------------------------------------
-
-predictions = saved_lr_model.predict(X_test)
-
-predicted_classes = np.argmax(predictions, axis=1)
-
-# --------------------------------------------------
-# Step 22: Confusion Matrix
-# --------------------------------------------------
-
-print("\nConfusion Matrix:\n")
-
-print(confusion_matrix(y_test, predicted_classes))
-
-# --------------------------------------------------
-# Step 23: Classification Report
+# Classification Report
 # --------------------------------------------------
 
 print("\nClassification Report:\n")
 
-print(classification_report(y_test, predicted_classes))
+print(classification_report(ytest, predicted_classes))
 
 # --------------------------------------------------
-# Step 24: Plot Accuracy Graph
+# Plot Accuracy Graph
 # --------------------------------------------------
 
-plt.plot(history_lr.history['accuracy'])
-plt.plot(history_lr.history['val_accuracy'])
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
 
-plt.title('Logistic Regression Accuracy')
+plt.title("Model Accuracy")
 
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
+plt.xlabel("Epoch")
+plt.ylabel("Accuracy")
 
-plt.legend(['Train', 'Validation'])
+plt.legend(["Train", "Validation"])
 
 plt.show()
 
 # --------------------------------------------------
-# Step 25: Test One Sample
+# Test One Sample
 # --------------------------------------------------
 
-sample = X_test[1]
+sample = xtest[0]
 
-prediction = saved_lr_model.predict(sample.reshape(1, 28, 28))
+prediction = model.predict(sample.reshape(1, 28, 28))
 
 predicted_label = np.argmax(prediction)
 
+print("\nPredicted Digit =", predicted_label)
+
+# Display Image
 plt.imshow(sample, cmap='gray')
 
 plt.title(f"Predicted Digit: {predicted_label}")
@@ -1016,7 +897,6 @@ plt.show()
 #----------------------------------------------------------------------------- 11 B - Pytorch
 # ANN Assignment 11
 # Neural Network using PyTorch
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -1024,12 +904,20 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 
+import numpy as np
 import matplotlib.pyplot as plt
 
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import (
+    confusion_matrix,
+    classification_report,
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score
+)
 
 # --------------------------------------------------
-# Step 1: Load Dataset
+# Load MNIST Dataset
 # --------------------------------------------------
 
 transform = transforms.ToTensor()
@@ -1061,43 +949,31 @@ test_loader = DataLoader(
 )
 
 # --------------------------------------------------
-# Step 2: Define Neural Network
+# Create Logistic Regression Model
 # --------------------------------------------------
 
-class NeuralNetwork(nn.Module):
+class LogisticRegressionModel(nn.Module):
 
     def __init__(self):
 
-        super(NeuralNetwork, self).__init__()
+        super(LogisticRegressionModel, self).__init__()
 
         self.flatten = nn.Flatten()
 
-        self.fc1 = nn.Linear(28 * 28, 128)
-
-        self.relu = nn.ReLU()
-
-        self.fc2 = nn.Linear(128, 10)
+        self.linear = nn.Linear(28 * 28, 10)
 
     def forward(self, x):
 
         x = self.flatten(x)
 
-        x = self.fc1(x)
-
-        x = self.relu(x)
-
-        x = self.fc2(x)
+        x = self.linear(x)
 
         return x
 
-# --------------------------------------------------
-# Step 3: Create Model
-# --------------------------------------------------
-
-model = NeuralNetwork()
+model = LogisticRegressionModel()
 
 # --------------------------------------------------
-# Step 4: Define Loss and Optimizer
+# Loss Function and Optimizer
 # --------------------------------------------------
 
 criterion = nn.CrossEntropyLoss()
@@ -1105,7 +981,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # --------------------------------------------------
-# Step 5: Train Model
+# Train Model
 # --------------------------------------------------
 
 epochs = 5
@@ -1121,18 +997,24 @@ for epoch in range(epochs):
 
     for images, labels in train_loader:
 
+        # Clear Gradients
         optimizer.zero_grad()
 
+        # Forward Pass
         outputs = model(images)
 
+        # Calculate Loss
         loss = criterion(outputs, labels)
 
+        # Backpropagation
         loss.backward()
 
+        # Update Weights
         optimizer.step()
 
         running_loss += loss.item()
 
+        # Calculate Accuracy
         _, predicted = torch.max(outputs.data, 1)
 
         total += labels.size(0)
@@ -1143,32 +1025,12 @@ for epoch in range(epochs):
 
     train_accuracy.append(accuracy)
 
-    print(f"Epoch [{epoch+1}/{epochs}], Loss: {running_loss:.4f}, Accuracy: {accuracy:.2f}%")
+    print(f"Epoch [{epoch+1}/{epochs}]")
+    print(f"Loss = {running_loss:.4f}")
+    print(f"Training Accuracy = {accuracy:.2f}%\n")
 
 # --------------------------------------------------
-# Step 6: Save Model
-# --------------------------------------------------
-
-torch.save(model.state_dict(), "pytorch_neural_network_model_11_C.pth")
-
-print("\nPyTorch Model Saved Successfully!")
-
-# --------------------------------------------------
-# Step 7: Load Saved Model
-# --------------------------------------------------
-
-loaded_model = NeuralNetwork()
-
-loaded_model.load_state_dict(
-    torch.load("pytorch_neural_network_model_11_C.pth")
-)
-
-loaded_model.eval()
-
-print("Saved PyTorch Model Loaded Successfully!")
-
-# --------------------------------------------------
-# Step 8: Test Model
+# Evaluate Model
 # --------------------------------------------------
 
 correct = 0
@@ -1181,7 +1043,7 @@ with torch.no_grad():
 
     for images, labels in test_loader:
 
-        outputs = loaded_model(images)
+        outputs = model(images)
 
         _, predicted = torch.max(outputs.data, 1)
 
@@ -1195,10 +1057,34 @@ with torch.no_grad():
 
 test_accuracy = 100 * correct / total
 
-print(f"\nPyTorch Neural Network Accuracy: {test_accuracy:.2f}%")
+print("\nTest Accuracy =", test_accuracy)
 
 # --------------------------------------------------
-# Step 9: Confusion Matrix
+# Save Model
+# --------------------------------------------------
+
+torch.save(model.state_dict(), "pytorch_logistic_regression_model.pth")
+
+print("\nModel Saved Successfully!")
+
+# --------------------------------------------------
+# Evaluation Metrics
+# --------------------------------------------------
+
+print("\nAccuracy Score:")
+print(accuracy_score(all_labels, all_predictions))
+
+print("\nPrecision Score:")
+print(precision_score(all_labels, all_predictions, average='weighted'))
+
+print("\nRecall Score:")
+print(recall_score(all_labels, all_predictions, average='weighted'))
+
+print("\nF1 Score:")
+print(f1_score(all_labels, all_predictions, average='weighted'))
+
+# --------------------------------------------------
+# Confusion Matrix
 # --------------------------------------------------
 
 print("\nConfusion Matrix:\n")
@@ -1206,7 +1092,7 @@ print("\nConfusion Matrix:\n")
 print(confusion_matrix(all_labels, all_predictions))
 
 # --------------------------------------------------
-# Step 10: Classification Report
+# Classification Report
 # --------------------------------------------------
 
 print("\nClassification Report:\n")
@@ -1214,31 +1100,35 @@ print("\nClassification Report:\n")
 print(classification_report(all_labels, all_predictions))
 
 # --------------------------------------------------
-# Step 11: Plot Accuracy Graph
+# Plot Accuracy Graph
 # --------------------------------------------------
 
 plt.plot(train_accuracy)
 
-plt.title("PyTorch Model Accuracy")
+plt.title("Model Accuracy")
 
 plt.xlabel("Epoch")
-
 plt.ylabel("Accuracy")
 
 plt.show()
 
 # --------------------------------------------------
-# Step 12: Test One Sample
+# Test One Sample
 # --------------------------------------------------
 
 sample, label = test_dataset[0]
 
 with torch.no_grad():
 
-    output = loaded_model(sample.unsqueeze(0))
+    output = model(sample.unsqueeze(0))
 
     _, predicted = torch.max(output, 1)
 
+print("\nActual Digit =", label)
+
+print("Predicted Digit =", predicted.item())
+
+# Display Image
 plt.imshow(sample.squeeze(), cmap='gray')
 
 plt.title(f"Predicted Digit: {predicted.item()}")
@@ -1247,128 +1137,131 @@ plt.show()
 
 #----------------------------------------------------------------------------- 12
 import tensorflow as tf
+import numpy as np
+import matplotlib.pyplot as plt
 
-from tensorflow.keras import layers, models
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import (
+    Dense,
+    Conv2D,
+    Flatten,
+    Input,
+    MaxPooling2D
+)
 
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
     recall_score,
-    confusion_matrix
+    confusion_matrix,
+    classification_report
 )
 
-import numpy as np
-
-# Load CIFAR-10 Dataset
-(x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
+# Load MNIST Dataset
+(xtrain, ytrain), (xtest, ytest) = tf.keras.datasets.mnist.load_data()
 
 # Normalize Data
-x_train = x_train / 255.0
-x_test = x_test / 255.0
+xtrain = xtrain / 255.0
+xtest = xtest / 255.0
+
+# Reshape Data
+xtrain = xtrain.reshape(-1, 28, 28, 1)
+xtest = xtest.reshape(-1, 28, 28, 1)
 
 # CNN Model
-def create_cnn():
+model = Sequential([
 
-    model = models.Sequential([
+    Input(shape=(28, 28, 1)),
 
-        # Convolution Layer 1
-        layers.Conv2D(
-            32,
-            (3, 3),
-            activation='relu',
-            input_shape=(32, 32, 3)
-        ),
+    Conv2D(32, (3, 3), activation="relu"),
+    MaxPooling2D(2, 2),
 
-        # Pooling Layer
-        layers.MaxPooling2D((2, 2)),
+    Conv2D(64, (3, 3), activation="relu"),
+    MaxPooling2D(2, 2),
 
-        # Convolution Layer 2
-        layers.Conv2D(
-            64,
-            (3, 3),
-            activation='relu'
-        ),
+    Flatten(),
 
-        # Pooling Layer
-        layers.MaxPooling2D((2, 2)),
+    Dense(128, activation="relu"),
 
-        # Flatten Layer
-        layers.Flatten(),
-
-        # Fully Connected Layer
-        layers.Dense(
-            64,
-            activation='relu'
-        ),
-
-        # Output Layer
-        layers.Dense(10)
-    ])
-
-    return model
-
-# Initialize Model
-model = create_cnn()
+    Dense(10, activation="softmax")
+])
 
 # Compile Model
 model.compile(
-    optimizer='adam',
-
-    loss=tf.keras.losses.SparseCategoricalCrossentropy(
-        from_logits=True
-    ),
-
-    metrics=['accuracy']
+    optimizer="adam",
+    loss="sparse_categorical_crossentropy",
+    metrics=["accuracy"]
 )
 
-# Display Model Summary
-model.summary()
-
 # Train Model
-print("\nTraining Started...\n")
+print("Training Started...\n")
 
-history = model.fit(
-    x_train,
-    y_train,
+model.fit(
+    xtrain,
+    ytrain,
     epochs=5,
-    validation_data=(x_test, y_test)
+    batch_size=32,
+    validation_split=0.1
 )
 
 print("\nTraining Completed!")
 
-# Predictions
-y_pred_logits = model.predict(x_test)
+# Save Model
+model.save("cnn_mnist_model.h5")
 
-# Convert Logits to Classes
-y_pred = np.argmax(
-    y_pred_logits,
+print("\nModel saved successfully!")
+
+# Load Saved Model
+loaded_model = tf.keras.models.load_model(
+    "cnn_mnist_model.h5"
+)
+
+print("Model loaded successfully!")
+
+# Evaluate Model
+loss, acc = loaded_model.evaluate(
+    xtest,
+    ytest
+)
+
+print("\nLoss     :", loss)
+print("Accuracy :", acc)
+
+# Predict All Test Images
+ypred = loaded_model.predict(xtest)
+
+# Convert probabilities to classes
+ypred_classes = np.argmax(
+    ypred,
     axis=1
 )
 
-# Flatten Actual Labels
-y_true = y_test.flatten()
-
 # Evaluation Metrics
 accuracy = accuracy_score(
-    y_true,
-    y_pred
+    ytest,
+    ypred_classes
 )
 
 precision = precision_score(
-    y_true,
-    y_pred,
-    average='weighted'
+    ytest,
+    ypred_classes,
+    average="weighted"
 )
 
 recall = recall_score(
-    y_true,
-    y_pred,
-    average='weighted'
+    ytest,
+    ypred_classes,
+    average="weighted"
 )
 
 cm = confusion_matrix(
-    y_true,
-    y_pred
+    ytest,
+    ypred_classes
+)
+
+report = classification_report(
+    ytest,
+    ypred_classes
 )
 
 # Display Metrics
@@ -1384,43 +1277,44 @@ print("\nConfusion Matrix")
 
 print(cm)
 
-# Class Labels
-class_names = [
-    'airplane',
-    'automobile',
-    'bird',
-    'cat',
-    'deer',
-    'dog',
-    'frog',
-    'horse',
-    'ship',
-    'truck'
-]
+print("\nClassification Report")
+
+print(report)
 
 # Test Prediction
-sample_index = 0
+sample = 0
 
-predicted_label = class_names[y_pred[sample_index]]
+prediction = loaded_model.predict(
+    xtest[sample:sample+1]
+)
 
-actual_label = class_names[y_true[sample_index]]
+predicted_digit = np.argmax(prediction)
 
-print("\nTest Prediction")
+# Display Test Image
+plt.imshow(
+    xtest[sample].reshape(28, 28),
+    cmap="gray"
+)
 
-print("Actual Label   :", actual_label)
+plt.title(
+    f"Predicted: {predicted_digit} | Actual: {ytest[sample]}"
+)
 
-print("Predicted Label:", predicted_label)
+plt.axis("off")
 
-# Save Model
-model.save("cnn_model_12_A.h5")
+plt.show()
 
-print("\nModel saved successfully as cnn_model.h5")
+print("\nPredicted Digit:", predicted_digit)
+
+print("Actual Digit   :", ytest[sample])
 
 #----------------------------------------------------------------------------- 12 - B - Pytorch
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+
+import matplotlib.pyplot as plt
 
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
@@ -1429,83 +1323,97 @@ from sklearn.metrics import (
     accuracy_score,
     precision_score,
     recall_score,
-    confusion_matrix
+    confusion_matrix,
+    classification_report
 )
 
 # Device Configuration
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device(
+    "cuda" if torch.cuda.is_available() else "cpu"
+)
 
-# Image Transform
+# Transform
 transform = transforms.Compose([
-    transforms.Resize((32, 32)),
     transforms.ToTensor()
 ])
 
-# Load CIFAR-10 Dataset
-train_dataset = datasets.CIFAR10(
+# Load MNIST Dataset
+train_dataset = datasets.MNIST(
     root='./data',
     train=True,
     download=True,
     transform=transform
 )
 
-test_dataset = datasets.CIFAR10(
+test_dataset = datasets.MNIST(
     root='./data',
     train=False,
     download=True,
     transform=transform
 )
 
+# Data Loader
 train_loader = DataLoader(
     train_dataset,
-    batch_size=64,
+    batch_size=32,
     shuffle=True
 )
 
 test_loader = DataLoader(
     test_dataset,
-    batch_size=64,
+    batch_size=32,
     shuffle=False
 )
 
 # CNN Model
-class SimpleCNN(nn.Module):
+class CNN(nn.Module):
 
     def __init__(self):
-        super(SimpleCNN, self).__init__()
+
+        super(CNN, self).__init__()
 
         # Convolution Layer 1
         self.conv1 = nn.Conv2d(
-            in_channels=3,
+            in_channels=1,
             out_channels=32,
-            kernel_size=3,
-            padding=1
+            kernel_size=3
         )
 
         # Convolution Layer 2
         self.conv2 = nn.Conv2d(
             in_channels=32,
             out_channels=64,
-            kernel_size=3,
-            padding=1
+            kernel_size=3
         )
 
         # Pooling Layer
         self.pool = nn.MaxPool2d(2, 2)
 
         # Fully Connected Layers
-        self.fc1 = nn.Linear(64 * 8 * 8, 512)
-        self.fc2 = nn.Linear(512, 10)
+        self.fc1 = nn.Linear(
+            64 * 5 * 5,
+            128
+        )
+
+        self.fc2 = nn.Linear(
+            128,
+            10
+        )
 
     def forward(self, x):
 
-        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(
+            F.relu(self.conv1(x))
+        )
 
-        x = self.pool(F.relu(self.conv2(x)))
+        x = self.pool(
+            F.relu(self.conv2(x))
+        )
 
-        # Flatten Layer
-        x = x.view(-1, 64 * 8 * 8)
+        # Flatten
+        x = x.view(-1, 64 * 5 * 5)
 
+        # Fully Connected
         x = F.relu(self.fc1(x))
 
         x = self.fc2(x)
@@ -1513,11 +1421,12 @@ class SimpleCNN(nn.Module):
         return x
 
 # Initialize Model
-model = SimpleCNN().to(device)
+model = CNN().to(device)
 
-# Loss Function and Optimizer
+# Loss Function
 criterion = nn.CrossEntropyLoss()
 
+# Optimizer
 optimizer = optim.Adam(
     model.parameters(),
     lr=0.001
@@ -1539,13 +1448,13 @@ for epoch in range(epochs):
         images = images.to(device)
         labels = labels.to(device)
 
-        # Clear gradients
+        # Clear Gradients
         optimizer.zero_grad()
 
         # Forward Pass
         outputs = model(images)
 
-        # Calculate Loss
+        # Loss
         loss = criterion(outputs, labels)
 
         # Backpropagation
@@ -1556,13 +1465,33 @@ for epoch in range(epochs):
 
         running_loss += loss.item()
 
-    print(f"Epoch [{epoch+1}/{epochs}] Loss: {running_loss:.4f}")
+    print(
+        f"Epoch [{epoch+1}/{epochs}] "
+        f"Loss: {running_loss:.4f}"
+    )
 
 print("\nTraining Completed!")
 
-# Evaluation
-model.eval()
+# Save Model
+torch.save(
+    model.state_dict(),
+    "cnn_mnist_model.pth"
+)
 
+print("\nModel saved successfully!")
+
+# Load Saved Model
+loaded_model = CNN().to(device)
+
+loaded_model.load_state_dict(
+    torch.load("cnn_mnist_model.pth")
+)
+
+loaded_model.eval()
+
+print("Model loaded successfully!")
+
+# Evaluation
 all_preds = []
 all_labels = []
 
@@ -1572,15 +1501,23 @@ with torch.no_grad():
 
         images = images.to(device)
 
-        outputs = model(images)
+        outputs = loaded_model(images)
 
         _, predicted = torch.max(outputs, 1)
 
-        all_preds.extend(predicted.cpu().numpy())
-        all_labels.extend(labels.numpy())
+        all_preds.extend(
+            predicted.cpu().numpy()
+        )
 
-# Calculate Metrics
-accuracy = accuracy_score(all_labels, all_preds)
+        all_labels.extend(
+            labels.numpy()
+        )
+
+# Evaluation Metrics
+accuracy = accuracy_score(
+    all_labels,
+    all_preds
+)
 
 precision = precision_score(
     all_labels,
@@ -1594,7 +1531,15 @@ recall = recall_score(
     average='weighted'
 )
 
-cm = confusion_matrix(all_labels, all_preds)
+cm = confusion_matrix(
+    all_labels,
+    all_preds
+)
+
+report = classification_report(
+    all_labels,
+    all_preds
+)
 
 # Display Metrics
 print("\nEvaluation Metrics")
@@ -1609,34 +1554,41 @@ print("\nConfusion Matrix")
 
 print(cm)
 
+print("\nClassification Report")
+
+print(report)
+
 # Test Prediction
-classes = train_dataset.classes
-
 sample_image, sample_label = test_dataset[0]
-
-model.eval()
 
 with torch.no_grad():
 
     image = sample_image.unsqueeze(0).to(device)
 
-    output = model(image)
+    output = loaded_model(image)
 
     _, prediction = torch.max(output, 1)
 
-print("\nTest Prediction")
+# Convert Image for Display
+img = sample_image.squeeze().numpy()
 
-print("Actual Label   :", classes[sample_label])
-
-print("Predicted Label:", classes[prediction.item()])
-
-# Save Model
-torch.save(
-    model.state_dict(),
-    "cnn_model_12_B.pth"
+# Display Test Image
+plt.imshow(
+    img,
+    cmap="gray"
 )
 
-print("\nModel saved successfully as cnn_model.pth")
+plt.title(
+    f"Predicted: {prediction.item()} | Actual: {sample_label}"
+)
+
+plt.axis("off")
+
+plt.show()
+
+print("\nPredicted Digit:", prediction.item())
+
+print("Actual Digit   :", sample_label)
 
 
 #----------------------------------------------------------------------------- 13
