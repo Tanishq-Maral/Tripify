@@ -318,7 +318,7 @@ export default function Home() {
         <footer className="bg-black py-4 border-t border-gray-800">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <p className="text-gray-400 text-sm">&copy; 2024 Tripifyyy. All rights reserved. Connect, Explore, Remember.</p>
-            <div className="mt-2">
+            {/* <div className="mt-2">
               <a
                 href={trailFile}
                 download
@@ -326,7 +326,7 @@ export default function Home() {
               >
                 Download Trail PDF
               </a>
-            </div>
+            </div> */}
           </div>
         </footer>
       </div>
