@@ -6,6 +6,7 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import tripRoutes from "./routes/tripRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
+import plannerRoutes from "./routes/plannerRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -43,5 +44,6 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/trips", tripRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/planner", plannerRoutes);
 
 export default app;

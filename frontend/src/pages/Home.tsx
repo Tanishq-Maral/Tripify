@@ -6,6 +6,7 @@ import TripFilters, { Filters } from "../components/TripFilters";
 import { Link, useNavigate } from "react-router-dom";
 import backgroundImage from "../assets/background.jpg";
 import trailFile from "../assets/trail.txt";
+import TripPlanner from "../components/TripPlanner";
 
 function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: "neutral" | "success" | "warning" | "info" }) {
   const toneClass = {
@@ -315,9 +316,23 @@ export default function Home() {
           <p className="absolute bottom-2 left-2 sm:left-2 lg:left-2 text-gray-400 text-xs">Made by Tanishq Maral</p>
         </div>
 
-        <footer className="bg-black py-4 border-t border-gray-800">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p className="text-gray-400 text-sm">&copy; 2024 Tripifyyy. All rights reserved. Connect, Explore, Remember.</p>
+        <footer className="border-t border-gray-800 bg-black py-8">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col items-center justify-between gap-6 text-center md:flex-row md:text-left">
+              <div>
+                <h2 className="text-xl font-bold text-white">Contact Us</h2>
+                <p className="mt-2 text-sm text-gray-400">Have a question or feedback? We would love to hear from you.</p>
+              </div>
+              <a
+                href="mailto:contact@tripifyyy.com"
+                className="rounded-xl border border-blue-500/60 px-5 py-3 text-sm font-semibold text-blue-300 transition hover:bg-blue-500/10 hover:text-blue-200"
+              >
+                contact@tripifyyy.com
+              </a>
+            </div>
+            <div className="-mx-2 mt-6 border-t border-gray-800 pt-3">
+              <p className="text-center text-sm text-gray-400">&copy; 2024 Tripifyyy. All rights reserved. Connect, Explore, Remember.</p>
+            </div>
           </div>
         </footer>
       </div>
@@ -328,12 +343,13 @@ export default function Home() {
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-100 via-rose-50 to-slate-100">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-24 left-[-5rem] h-80 w-80 rounded-full bg-rose-200/45 blur-3xl" />
-        <div className="absolute top-1/3 right-[-6rem] h-96 w-96 rounded-full bg-white/60 blur-3xl" />
+        <div className="absolute top-1/3 right-[-6rem] h-96 w-96 rounded-full bg-rose-100/35 blur-3xl" />
         <div className="absolute bottom-[-7rem] left-1/4 h-96 w-96 rounded-full bg-rose-100/50 blur-3xl" />
       </div>
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <header className="mb-7 rounded-3xl border border-white/80 bg-white/80 p-4 shadow-md backdrop-blur md:p-5">
-          <div className="flex items-center justify-between">
+        <header className="relative z-30 isolate mb-7 overflow-visible rounded-3xl border border-gray-500 bg-gradient-to-br from-purple-900/30 via-white/65 to-fuchsia-200/70 p-4 text-slate-900 shadow-xl backdrop-blur md:p-5">
+          <div className="pointer-events-none absolute inset-0 rounded-3xl bg-[radial-gradient(circle_at_top_right,rgba(192,132,252,0.38),transparent_45%),radial-gradient(circle_at_bottom_left,rgba(233,213,255,0.42),transparent_50%)]" />
+          <div className="relative z-10 flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-900 flex items-center justify-center shadow-lg shadow-blue-500/30">
                 <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -342,7 +358,7 @@ export default function Home() {
               </div>
               <span className="text-2xl font-semibold text-slate-900">Tripifyyy</span>
             </Link>
-            <div ref={profileMenuRef} className="relative">
+            <div ref={profileMenuRef} className="relative z-40">
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="grid h-10 w-10 place-items-center rounded-full border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100"
@@ -354,7 +370,7 @@ export default function Home() {
                 </svg>
               </button>
               {showProfileMenu && (
-                <div className="absolute right-0 top-12 z-50 rounded-xl border border-slate-200 bg-white shadow-lg min-w-48">
+                <div className="absolute right-0 top-12 z-[60] min-w-48 rounded-xl border border-slate-200 bg-white shadow-lg">
                   <div className="p-3 border-b border-slate-100">
                     <p className="text-sm font-semibold text-slate-900">{user?.name || user?.email}</p>
                     <p className="text-xs text-slate-500">{user?.email}</p>
@@ -408,6 +424,8 @@ export default function Home() {
               <Badge tone="info">Fast Discovery</Badge>
             </div>
           </div>
+
+          <TripPlanner />
 
           <div className="rounded-3xl border border-gray-500 bg-gray-200 p-6 shadow-xl md:p-8">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -538,6 +556,25 @@ export default function Home() {
           ) : null}
         </section>
       </div>
+      <footer className="relative z-10 border-t border-slate-200 bg-gray-900 py-8 text-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center justify-between gap-5 text-center md:flex-row md:text-left">
+            <div>
+              <h2 className="text-xl font-bold">Contact Us</h2>
+              <p className="mt-2 text-sm text-slate-300">Have a question or feedback? We would love to hear from you.</p>
+            </div>
+            <a
+              href="mailto:contact@tripifyyy.com"
+              className="rounded-xl border border-sky-400/60 px-5 py-3 text-sm font-semibold text-sky-300 transition hover:bg-sky-400/10 hover:text-sky-200"
+            >
+              contact@tripifyyy.com
+            </a>
+          </div>
+          <div className="mt-6 border-t border-slate-700 pt-3">
+            <p className="text-center text-sm text-slate-300">&copy; 2024 Tripifyyy. All rights reserved. Connect, Explore, Remember.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
